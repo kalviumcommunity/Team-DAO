@@ -1,0 +1,153 @@
+datasource db {
+  provider = "postgresql"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// User role enum
+enum UserRole {
+  STUDENT
+  VERIFIER
+  ADMIN
+}
+
+// Product/Listing condition enum
+enum Condition {
+  NEW
+  LIKE_NEW
+  GOOD
+  FAIR
+  POOR
+}
+
+// Status of the listing
+enum ListingStatus {
+  ACTIVE
+  PENDING_VERIFICATION
+  SOLD
+  EXCHANGED
+  DEACTIVATED
+}
+
+// Type of listing
+enum ListingType {
+  SALE
+  EXCHANGE
+  DONATION
+  RENT
+}
+
+// Status of exchange requests
+enum ExchangeStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
+// Status of listing verification
+enum VerificationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model User {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  password  String
+  college   String
+  role      UserRole @default(STUDENT)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  listings                 Listing[]          @relation("UserListings")
+  wishlistItems            WishlistItem[]
+  cartItems                CartItem[]
+  sentExchangeRequests     ExchangeRequest[]  @relation("SentExchanges")
+  receivedExchangeRequests ExchangeRequest[]  @relation("ReceivedExchanges")
+  verifications            Verification[]     @relation("UserVerifications")
+}
+
+model Listing {
+  id                String        @id @default(uuid())
+  title             String
+  description       String
+  price             Float         // Float or Decimal depending on database requirements
+  condition         Condition
+  durationUsed      String?       // E.g., "3 months", "1 year"
+  category          String
+  stock             Int           @default(1)
+  sellerId          String
+  seller            User          @relation("UserListings", fields: [sellerId], references: [id], onDelete: Cascade)
+  status            ListingStatus @default(ACTIVE)
+  listingType       ListingType   @default(SALE)
+  exchangeAvailable Boolean       @default(false)
+  verified          Boolean       @default(false)
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  // Relations
+  wishlistItems       WishlistItem[]
+  cartItems           CartItem[]
+  offeredInExchanges  ExchangeRequest[] @relation("OfferedListing")
+  requestedInExchanges ExchangeRequest[] @relation("RequestedListing")
+  verifications       Verification[]
+}
+
+model WishlistItem {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  listingId String
+  listing   Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  // Ensure user cannot wishlist same item multiple times
+  @@unique([userId, listingId])
+}
+
+model CartItem {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  listingId String
+  listing   Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  quantity  Int      @default(1)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Ensure unique cart entries per user/listing
+  @@unique([userId, listingId])
+}
+
+model ExchangeRequest {
+  id                 String         @id @default(uuid())
+  senderId           String
+  sender             User           @relation("SentExchanges", fields: [senderId], references: [id], onDelete: Cascade)
+  receiverId         String
+  receiver           User           @relation("ReceivedExchanges", fields: [receiverId], references: [id], onDelete: Cascade)
+  offeredProductId   String
+  offeredProduct     Listing        @relation("OfferedListing", fields: [offeredProductId], references: [id], onDelete: Cascade)
+  requestedProductId String
+  requestedProduct   Listing        @relation("RequestedListing", fields: [requestedProductId], references: [id], onDelete: Cascade)
+  status             ExchangeStatus @default(PENDING)
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+}
+
+model Verification {
+  id         String             @id @default(uuid())
+  productId  String
+  product    Listing            @relation(fields: [productId], references: [id], onDelete: Cascade)
+  verifierId String
+  verifier   User               @relation("UserVerifications", fields: [verifierId], references: [id], onDelete: Cascade)
+  status     VerificationStatus @default(PENDING)
+  remarks    String?
+  createdAt  DateTime           @default(now())
+  updatedAt  DateTime           @updatedAt
+}
