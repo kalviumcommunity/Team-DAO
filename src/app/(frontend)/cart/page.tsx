@@ -26,7 +26,7 @@ export default function CartPage() {
   };
 
   // Prices in this mock mix currencies (₹ and $); real implementation would total in one currency.
-  const subtotal = useMemo(() => "₹41,600", [items]);
+  const subtotal = useMemo(() => "₹41,600", []);
 
   return (
     <>

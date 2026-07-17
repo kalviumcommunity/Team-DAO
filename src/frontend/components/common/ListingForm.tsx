@@ -4,7 +4,7 @@ import { ImagePlus, ShieldCheck } from "lucide-react";
 import { FormField, Select, TextArea, TextInput } from "@/frontend/components/common/FormField";
 import { SegmentedControl } from "@/frontend/components/common/SegmentedControl";
 import { Button } from "@/frontend/components/common/Button";
-import { StaggerItem } from "@/components/motion/FadeInSection";
+import { StaggerItem } from "@/frontend/components/motion/FadeInSection";
 import { motion } from "framer-motion";
 import { usePrefersReducedMotion } from "@/frontend/lib/motion";
 

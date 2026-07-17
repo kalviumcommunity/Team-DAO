@@ -28,8 +28,15 @@ export function MotionButton({
   const prefersReducedMotion = usePrefersReducedMotion();
   
   if (prefersReducedMotion) {
-    const { whileHover, whileTap, initial, animate, exit, variants, transition, ...rest } = props as any;
-    return <button {...rest}>{children}</button>;
+    const safeProps = { ...props } as Record<string, unknown>;
+    delete safeProps.whileHover;
+    delete safeProps.whileTap;
+    delete safeProps.initial;
+    delete safeProps.animate;
+    delete safeProps.exit;
+    delete safeProps.variants;
+    delete safeProps.transition;
+    return <button {...(safeProps as React.ComponentPropsWithoutRef<"button">)}>{children as React.ReactNode}</button>;
   }
 
   return (
@@ -43,8 +50,15 @@ export function HoverCard({ children, className, ...props }: ComponentPropsWitho
   const prefersReducedMotion = usePrefersReducedMotion();
 
   if (prefersReducedMotion) {
-    const { whileHover, whileTap, initial, animate, exit, variants, transition, ...rest } = props as any;
-    return <div className={className} {...rest}>{children}</div>;
+    const safeProps = { ...props } as Record<string, unknown>;
+    delete safeProps.whileHover;
+    delete safeProps.whileTap;
+    delete safeProps.initial;
+    delete safeProps.animate;
+    delete safeProps.exit;
+    delete safeProps.variants;
+    delete safeProps.transition;
+    return <div className={className} {...(safeProps as React.ComponentPropsWithoutRef<"div">)}>{children as React.ReactNode}</div>;
   }
 
   return (
@@ -98,8 +112,16 @@ export function MotionImage(props: ComponentPropsWithoutRef<typeof motion.img>) 
   const prefersReducedMotion = usePrefersReducedMotion();
 
   if (prefersReducedMotion) {
-    const { whileHover, whileTap, initial, animate, exit, variants, transition, ...rest } = props as any;
-    return <img {...rest} />;
+    const safeProps = { ...props } as Record<string, unknown>;
+    delete safeProps.whileHover;
+    delete safeProps.whileTap;
+    delete safeProps.initial;
+    delete safeProps.animate;
+    delete safeProps.exit;
+    delete safeProps.variants;
+    delete safeProps.transition;
+    // eslint-disable-next-line @next/next/no-img-element, jsx-a11y/alt-text
+    return <img {...(safeProps as React.ComponentPropsWithoutRef<"img">)} />;
   }
 
   return <motion.img {...props} />;

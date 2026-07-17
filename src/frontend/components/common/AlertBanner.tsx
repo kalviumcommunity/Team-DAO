@@ -1,6 +1,6 @@
 import { Info } from "lucide-react";
 import type { ReactNode } from "react";
-import { FadeInSection } from "@/components/motion/FadeInSection";
+import { FadeInSection } from "@/frontend/components/motion/FadeInSection";
 
 /** Dark inline notice banner, e.g. "One item was removed because it went out of stock." */
 export function AlertBanner({ children }: { children: ReactNode }) {

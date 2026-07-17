@@ -5,11 +5,15 @@ import type { Variants } from "framer-motion";
 
 /** Tracks the user's `prefers-reduced-motion` setting reactively. */
 export function usePrefersReducedMotion(): boolean {
-  const [prefersReduced, setPrefersReduced] = useState(false);
+  const [prefersReduced, setPrefersReduced] = useState(() => {
+    if (typeof window !== "undefined") {
+      return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    }
+    return false;
+  });
 
   useEffect(() => {
     const query = window.matchMedia("(prefers-reduced-motion: reduce)");
-    setPrefersReduced(query.matches);
     const listener = (event: MediaQueryListEvent) => setPrefersReduced(event.matches);
     query.addEventListener("change", listener);
     return () => query.removeEventListener("change", listener);
@@ -66,7 +70,7 @@ export const heroItem: Variants = {
 };
 
 /** Gentle up/down float loop for hero imagery. */
-export const floatLoop = {
+export const floatLoop: any = {
   animate: {
     y: [0, -10, 0],
     transition: { duration: 6, repeat: Infinity, ease: "easeInOut" },
@@ -74,7 +78,7 @@ export const floatLoop = {
 };
 
 /** Card hover lift, shared by product/wishlist/verification cards. */
-export const cardHover = {
+export const cardHover: Variants = {
   rest: { y: 0, boxShadow: "rgba(0,0,0,0.09) 0px 0px 28px 0px" },
   hover: {
     y: -6,
