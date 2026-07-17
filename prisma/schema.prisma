@@ -77,7 +77,7 @@ model Listing {
   id                String        @id @default(uuid())
   title             String
   description       String
-  price             Float         // Float or Decimal depending on database requirements
+  price             Decimal       // Decimal for precise monetary values
   condition         Condition
   durationUsed      String?       // E.g., "3 months", "1 year"
   category          String
@@ -97,6 +97,9 @@ model Listing {
   offeredInExchanges  ExchangeRequest[] @relation("OfferedListing")
   requestedInExchanges ExchangeRequest[] @relation("RequestedListing")
   verifications       Verification[]
+
+  // Indexes for query optimization
+  @@index([sellerId])
 }
 
 model WishlistItem {
@@ -138,6 +141,12 @@ model ExchangeRequest {
   status             ExchangeStatus @default(PENDING)
   createdAt          DateTime       @default(now())
   updatedAt          DateTime       @updatedAt
+
+  // Indexes for query optimization
+  @@index([senderId])
+  @@index([receiverId])
+  @@index([offeredProductId])
+  @@index([requestedProductId])
 }
 
 model Verification {
@@ -150,4 +159,8 @@ model Verification {
   remarks    String?
   createdAt  DateTime           @default(now())
   updatedAt  DateTime           @updatedAt
+
+  // Indexes for query optimization
+  @@index([productId])
+  @@index([verifierId])
 }
