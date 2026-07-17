@@ -77,7 +77,7 @@ model Listing {
   id                String        @id @default(uuid())
   title             String
   description       String
-  price             Decimal       // Decimal for precise monetary values
+  price             Decimal       @db.Decimal(10, 2) // Decimal for precise monetary values
   condition         Condition
   durationUsed      String?       // E.g., "3 months", "1 year"
   category          String
@@ -112,6 +112,9 @@ model WishlistItem {
 
   // Ensure user cannot wishlist same item multiple times
   @@unique([userId, listingId])
+
+  // Indexes for query optimization
+  @@index([listingId])
 }
 
 model CartItem {
@@ -126,6 +129,9 @@ model CartItem {
 
   // Ensure unique cart entries per user/listing
   @@unique([userId, listingId])
+
+  // Indexes for query optimization
+  @@index([listingId])
 }
 
 model ExchangeRequest {
