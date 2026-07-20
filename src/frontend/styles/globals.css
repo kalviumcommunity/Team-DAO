@@ -1,0 +1,164 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Playfair+Display:ital,wght@0,100;0,300;0,400;0,700;1,400&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap");
+
+@import "tailwindcss";
+
+@theme {
+  --color-on-surface: #1b1b1b;
+  --color-surface: #f9f9f9;
+  --color-tertiary-fixed: #dae7cc;
+  --color-error: #ba1a1a;
+  --color-secondary-fixed: #aaf2c8;
+  --color-silver-border: #cccccc;
+  --color-on-tertiary-fixed: #141e0e;
+  --color-tertiary-container: #dce9ce;
+  --color-surface-container-high: #e8e8e8;
+  --color-primary: #006e1f;
+  --color-inverse-on-surface: #f1f1f1;
+  --color-outline-variant: #bdcab8;
+  --color-on-secondary-fixed: #002112;
+  --color-on-secondary-container: #286f4d;
+  --color-pine-shadow: #083a26;
+  --color-on-error: #ffffff;
+  --color-surface-container-lowest: #ffffff;
+  --color-background: #f9f9f9;
+  --color-secondary-fixed-dim: #8ed6ad;
+  --color-secondary: #236b49;
+  --color-forest-depth: #0d5b3b;
+  --color-sage-gray: #838676;
+  --color-on-tertiary-fixed-variant: #3f4a36;
+  --color-cream-paper: #ffffff;
+  --color-secondary-container: #a7efc5;
+  --color-on-error-container: #93000a;
+  --color-surface-variant: #e2e2e2;
+  --color-mint-wash: #f2ffe3;
+  --color-surface-bright: #f9f9f9;
+  --color-on-secondary: #ffffff;
+  --color-on-primary-fixed: #002205;
+  --color-inverse-primary: #63df6c;
+  --color-inverse-surface: #303030;
+  --color-surface-container: #eeeeee;
+  --color-surface-container-highest: #e2e2e2;
+  --color-on-primary-fixed-variant: #005316;
+  --color-outline: #6e7b6a;
+  --color-eucalyptus: #9cb0a8;
+  --color-primary-fixed-dim: #63df6c;
+  --color-surface-tint: #006e1f;
+  --color-primary-fixed: #80fd85;
+  --color-on-tertiary-container: #5e6954;
+  --color-tertiary: #56624d;
+  --color-on-background: #1b1b1b;
+  --color-tertiary-fixed-dim: #becbb1;
+  --color-on-secondary-fixed-variant: #005233;
+  --color-warm-mist: #e9e7e2;
+  --color-surface-dim: #dadada;
+  --color-surface-container-low: #f3f3f3;
+  --color-stone-charcoal: #2d3637;
+  --color-on-surface-variant: #3e4a3c;
+  --color-on-primary: #ffffff;
+  --color-primary-container: #82ff87;
+  --color-on-primary-container: #007623;
+  --color-error-container: #ffdad6;
+  --color-on-tertiary: #ffffff;
+  --color-lime-accent: #82ff87;
+
+  --radius-squircle: 10px;
+
+  --spacing-section-gap: 80px;
+  --spacing-input-padding-y: 14px;
+  --spacing-gutter: 16px;
+  --spacing-card-padding: 30px;
+  --spacing-input-padding-x: 24px;
+  --spacing-container-margin: 24px;
+
+  --font-caption: "Inter", sans-serif;
+  --font-heading: "Inter", sans-serif;
+  --font-body-md: "Inter", sans-serif;
+  --font-label-caps: "Inter", sans-serif;
+  --font-display-lg: "Playfair Display", serif;
+  --font-display: "Playfair Display", serif;
+  --font-body-sm: "Inter", sans-serif;
+  --font-subheading: "Inter", sans-serif;
+  --font-heading-sm: "Inter", sans-serif;
+
+  --shadow-ambient: rgba(0,0,0,0.09) 0px 0px 28px 0px;
+  --background-image-lime-gradient: linear-gradient(90deg, #82ff87 0%, #a3fda7 50%, #deff82 100%);
+}
+
+@utility text-caption {
+  font-size: 12px;
+  line-height: 1.2;
+  letter-spacing: -0.12px;
+  font-weight: 400;
+}
+@utility text-heading {
+  font-size: 30px;
+  line-height: 1.2;
+  letter-spacing: -0.3px;
+  font-weight: 700;
+}
+@utility text-body-md {
+  font-size: 16px;
+  line-height: 1.5;
+  letter-spacing: -0.1px;
+  font-weight: 400;
+}
+@utility text-label-caps {
+  font-size: 12px;
+  line-height: 1.2;
+  letter-spacing: 0.05em;
+  font-weight: 700;
+}
+@utility text-display-lg {
+  font-size: 120px;
+  line-height: 0.95;
+  letter-spacing: -2.04px;
+  font-weight: 100;
+}
+@utility text-display {
+  font-size: 72px;
+  line-height: 0.95;
+  letter-spacing: -1.22px;
+  font-weight: 100;
+}
+@utility text-body-sm {
+  font-size: 15px;
+  line-height: 1.4;
+  letter-spacing: -0.15px;
+  font-weight: 400;
+}
+@utility text-subheading {
+  font-size: 18px;
+  line-height: 1.4;
+  letter-spacing: -0.18px;
+  font-weight: 400;
+}
+@utility text-heading-sm {
+  font-size: 24px;
+  line-height: 1.2;
+  letter-spacing: -0.24px;
+  font-weight: 500;
+}
+
+body {
+  background-color: var(--color-mint-wash);
+  color: var(--color-on-surface);
+}
+
+.material-symbols-outlined {
+  font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
+}
+.material-symbols-outlined.fill {
+  font-variation-settings: "FILL" 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
