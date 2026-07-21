@@ -1,0 +1,10 @@
+git checkout main
+git pull origin main
+
+git checkout -b feature/layout
+
+git add <files for this feature>
+
+git commit -m "feat(layout): implement application layout"
+
+git push -u origin feature/layout

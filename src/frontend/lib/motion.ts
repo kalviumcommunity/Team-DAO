@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import type { Variants } from "framer-motion";
+import type { Variants, TargetAndTransition } from "framer-motion";
 
 /** Tracks the user's `prefers-reduced-motion` setting reactively. */
 export function usePrefersReducedMotion(): boolean {
@@ -70,7 +70,7 @@ export const heroItem: Variants = {
 };
 
 /** Gentle up/down float loop for hero imagery. */
-export const floatLoop: any = {
+export const floatLoop: { animate: TargetAndTransition } = {
   animate: {
     y: [0, -10, 0],
     transition: { duration: 6, repeat: Infinity, ease: "easeInOut" },
