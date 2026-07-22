@@ -1,4 +1,3 @@
-
 import { Navbar } from "@/frontend/components/layout/Navbar";
 import { Footer } from "@/frontend/components/layout/Footer";
 import { ProductCard } from "@/frontend/components/product/ProductCard";

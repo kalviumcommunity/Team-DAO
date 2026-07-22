@@ -7,13 +7,51 @@ import { Button } from "@/frontend/components/common/Button";
 import { StaggerItem } from "@/frontend/components/motion/FadeInSection";
 import { motion } from "framer-motion";
 import { usePrefersReducedMotion } from "@/frontend/lib/motion";
+import { useState } from "react";
 
-export function ListingForm() {
+interface ListingFormProps {
+  onSubmit?: (payload: Record<string, unknown>) => Promise<void> | void;
+  submitting?: boolean;
+}
+
+export function ListingForm({ onSubmit, submitting = false }: ListingFormProps) {
   const prefersReducedMotion = usePrefersReducedMotion();
+  const [formData, setFormData] = useState({
+    title: "",
+    description: "",
+    price: "",
+    condition: "",
+    durationUsed: "",
+    category: "Books",
+    stock: "1",
+    listingType: "SALE",
+    exchangeAvailable: false,
+  });
+
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    const { name, value } = event.target;
+    setFormData((current) => ({ ...current, [name]: value }));
+  };
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    await onSubmit?.({
+      title: formData.title,
+      description: formData.description,
+      price: Number(formData.price),
+      condition: formData.condition.toUpperCase(),
+      durationUsed: formData.durationUsed || undefined,
+      category: formData.category,
+      stock: Number(formData.stock),
+      listingType: formData.listingType,
+      exchangeAvailable: formData.exchangeAvailable,
+    });
+  };
 
   return (
     <StaggerItem className="relative z-10 flex w-full flex-col gap-8 rounded-2xl bg-cream-paper p-card-padding shadow-ambient">
-      <form className="flex flex-col gap-6" onSubmit={(event) => event.preventDefault()}>
+      <form className="flex flex-col gap-6" onSubmit={handleSubmit}>
         <FormField label="Photos" htmlFor="photo-upload">
           <motion.label
             htmlFor="photo-upload"
@@ -34,12 +72,15 @@ export function ListingForm() {
             name="item-name"
             placeholder="e.g., Engineering Mathematics 3rd Ed."
             required
+            value={formData.title}
+            onChange={handleChange}
+            name="title"
           />
         </FormField>
 
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <FormField label="Condition" htmlFor="condition">
-            <Select id="condition" name="condition" defaultValue="">
+            <Select id="condition" name="condition" value={formData.condition} onChange={handleChange}>
               <option value="" disabled>
                 Select condition...
               </option>
@@ -50,7 +91,7 @@ export function ListingForm() {
           </FormField>
 
           <FormField label="Duration of use" htmlFor="duration">
-            <Select id="duration" name="duration" defaultValue="">
+            <Select id="duration" name="durationUsed" value={formData.durationUsed} onChange={handleChange}>
               <option value="" disabled>
                 Select duration...
               </option>
@@ -62,7 +103,14 @@ export function ListingForm() {
         </div>
 
         <FormField label="Listing type" htmlFor="listing-type">
-          <SegmentedControl options={["Sell", "Exchange", "Open to both"]} />
+          <SegmentedControl
+            options={["Sell", "Exchange", "Open to both"]}
+            defaultValue="Sell"
+            onChange={(value) => {
+              const normalized = value === "Exchange" ? "EXCHANGE" : value === "Open to both" ? "SALE" : "SALE";
+              setFormData((current) => ({ ...current, listingType: normalized, exchangeAvailable: value === "Open to both" }));
+            }}
+          />
         </FormField>
 
         <FormField label="Asking price" htmlFor="price">
@@ -76,6 +124,9 @@ export function ListingForm() {
               type="number"
               placeholder="0.00"
               required
+              name="price"
+              value={formData.price}
+              onChange={handleChange}
               className="w-full pl-12"
             />
           </div>
@@ -87,6 +138,9 @@ export function ListingForm() {
             name="description"
             rows={4}
             placeholder="Describe the item, any flaws, or what you'd accept in exchange..."
+            name="description"
+            value={formData.description}
+            onChange={handleChange}
           />
         </FormField>
 
@@ -99,8 +153,8 @@ export function ListingForm() {
         </div>
 
         <div className="mt-4">
-          <Button type="submit" variant="primary" fullWidth className="rounded-[200px] py-4">
-            Submit listing
+          <Button type="submit" variant="primary" fullWidth className="rounded-[200px] py-4" disabled={submitting}>
+            {submitting ? "Submitting..." : "Submit listing"}
           </Button>
         </div>
       </form>
