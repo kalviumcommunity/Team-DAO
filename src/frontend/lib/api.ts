@@ -123,6 +123,21 @@ export async function getProducts() {
   }));
 }
 
+export async function getProductById(listingId: string) {
+  const data = await apiRequest<{ listing: BackendListing }>(`/api/products/${listingId}`);
+  const listing = data.listing;
+
+  return {
+    id: listing.id,
+    name: listing.title,
+    price: formatPrice(listing.price),
+    image: 'https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&w=900&q=80',
+    imageAlt: `${listing.title} listing`,
+    condition: formatCondition(listing.condition),
+    trending: listing.verified ?? false,
+  };
+}
+
 interface BackendCartItem {
   id: string;
   quantity: number;
@@ -198,6 +213,13 @@ export async function getWishlistItems() {
       image: 'https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&w=900&q=80',
       imageAlt: `${item.listing.title} listing`,
     };
+  });
+}
+
+export async function addToWishlistItem(listingId: string) {
+  return apiRequest('/api/wishlist', {
+    method: 'POST',
+    body: JSON.stringify({ listingId }),
   });
 }
 
