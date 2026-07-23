@@ -20,6 +20,10 @@ export function setAuthToken(token: string | null) {
   }
 }
 
+export function clearAuthToken() {
+  setAuthToken(null);
+}
+
 export async function apiRequest<T>(path: string, init: RequestInit = {}): Promise<T> {
   const token = getAuthToken();
   const headers = new Headers(init.headers);
@@ -57,50 +61,44 @@ export async function apiRequest<T>(path: string, init: RequestInit = {}): Promi
   return data as T;
 }
 
-interface BackendListing {
-  id: string;
-  title: string;
-  description?: string;
-  price: number | string;
-  condition?: string;
-  category?: string;
-  stock?: number;
-  status?: string;
-  seller?: {
-    id?: string;
-    name?: string;
-    college?: string;
-  };
-  verified?: boolean;
-  listingType?: string;
-}
+export async function loginUser(payload: { email: string; password: string }) {
+  const result = await apiRequest<{ token: string; user: { id: string; name: string; email: string; college: string; role: string } }>(
+    "/api/auth/login",
+    {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }
+  );
 
-export async function getProducts() {
-  const data = await apiRequest<{ listings: BackendListing[] }>('/api/products');
-  return data.listings.map((listing) => ({
-    id: listing.id,
-    name: listing.title,
-    price: formatPrice(listing.price),
-    image: 'https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&w=900&q=80',
-    imageAlt: `${listing.title} listing`,
-    condition: formatCondition(listing.condition),
-    trending: listing.verified ?? false,
-  }));
-}
-
-function formatPrice(price: number | string) {
-  const numericValue = typeof price === 'number' ? price : Number(price);
-  if (Number.isNaN(numericValue)) {
-    return '$0.00';
+  if (result.token) {
+    setAuthToken(result.token);
   }
 
-  return `$${numericValue.toFixed(2)}`;
+  return result;
 }
 
-function formatCondition(condition?: string) {
-  if (!condition) {
-    return undefined;
+export async function registerUser(payload: {
+  name: string;
+  email: string;
+  password: string;
+  college: string;
+  role?: string;
+}) {
+  const result = await apiRequest<{ token: string; user: { id: string; name: string; email: string; college: string; role: string } }>(
+    "/api/auth/register",
+    {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }
+  );
+
+  if (result.token) {
+    setAuthToken(result.token);
   }
 
-  return condition.replace(/_/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase());
+  return result;
+}
+
+export async function getCurrentUser() {
+  return apiRequest<{ user: { id: string; name: string; email: string; college: string; role: string } }>('/api/auth/me');
 }

@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
 import { FadeInSection, StaggerItem } from "@/frontend/components/motion/FadeInSection";
 import { AuthTabs } from "@/frontend/components/common/AuthTabs";
@@ -5,6 +8,7 @@ import { LoginForm } from "@/frontend/components/common/LoginForm";
 import { Button } from "@/frontend/components/common/Button";
 
 export default function LoginPage() {
+  const [mode, setMode] = useState<"login" | "signup">("login");
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-mint-wash font-sans antialiased">
       <header className="fixed top-0 z-50 flex h-[72px] w-full items-center justify-center bg-transparent">
@@ -29,11 +33,11 @@ export default function LoginPage() {
           </StaggerItem>
 
           <StaggerItem>
-            <AuthTabs />
+            <AuthTabs onChange={(tab) => setMode(tab === "Sign up" ? "signup" : "login")} />
           </StaggerItem>
 
           <StaggerItem>
-            <LoginForm />
+            <LoginForm mode={mode} />
           </StaggerItem>
 
           <StaggerItem className="mt-[-8px] text-center">
