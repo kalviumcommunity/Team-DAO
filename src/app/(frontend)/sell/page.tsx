@@ -1,9 +1,35 @@
+"use client";
+
+import { useState } from "react";
 import { Navbar } from "@/frontend/components/layout/Navbar";
 import { Footer } from "@/frontend/components/layout/Footer";
 import { ListingForm } from "@/frontend/components/common/ListingForm";
 import { FadeInSection } from "@/frontend/components/motion/FadeInSection";
+import { apiRequest } from "@/frontend/lib/api";
 
 export default function SellPage() {
+  const [success, setSuccess] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleSubmit = async (payload: Record<string, unknown>) => {
+    try {
+      setSubmitting(true);
+      setError(null);
+      setSuccess(null);
+
+      await apiRequest("/api/products", {
+        method: "POST",
+        body: JSON.stringify(payload),
+      });
+
+      setSuccess("Listing submitted successfully.");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unable to submit listing.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
   return (
     <>
       <Navbar activeHref="/sell" />
@@ -21,7 +47,19 @@ export default function SellPage() {
           </p>
         </FadeInSection>
 
-        <ListingForm />
+        {error ? (
+          <p className="rounded-2xl border border-error/20 bg-error-container/40 px-4 py-3 text-sm text-on-surface">
+            {error}
+          </p>
+        ) : null}
+
+        {success ? (
+          <p className="rounded-2xl border border-success/20 bg-success-container/40 px-4 py-3 text-sm text-on-surface">
+            {success}
+          </p>
+        ) : null}
+
+        <ListingForm onSubmit={handleSubmit} submitting={submitting} />
       </main>
 
       <Footer />
