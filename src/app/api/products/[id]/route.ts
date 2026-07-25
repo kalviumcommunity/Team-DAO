@@ -10,9 +10,9 @@ export async function GET(
     const { id } = await params;
     const listing = await ListingService.getListingById(id);
     return NextResponse.json({ listing }, { status: 200 });
-  } catch (error: any) {
+  } catch (error: unknown) {
     return NextResponse.json(
-      { error: error.message || "Listing not found" },
+      { error: (error instanceof Error ? error.message : String(error)) || "Listing not found" },
       { status: 404 }
     );
   }
@@ -32,9 +32,9 @@ export async function PUT(
     const body = await req.json();
     const updated = await ListingService.updateListing(user.id, user.role, id, body);
     return NextResponse.json({ listing: updated }, { status: 200 });
-  } catch (error: any) {
+  } catch (error: unknown) {
     return NextResponse.json(
-      { error: error.message || "Failed to update listing" },
+      { error: (error instanceof Error ? error.message : String(error)) || "Failed to update listing" },
       { status: 400 }
     );
   }
@@ -53,9 +53,9 @@ export async function DELETE(
 
     await ListingService.deleteListing(user.id, user.role, id);
     return NextResponse.json({ message: "Listing deleted successfully" }, { status: 200 });
-  } catch (error: any) {
+  } catch (error: unknown) {
     return NextResponse.json(
-      { error: error.message || "Failed to delete listing" },
+      { error: (error instanceof Error ? error.message : String(error)) || "Failed to delete listing" },
       { status: 400 }
     );
   }

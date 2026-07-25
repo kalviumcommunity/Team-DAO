@@ -12,24 +12,26 @@ export default function VerifyPage() {
   return (
     <>
       <header className="sticky top-0 z-50 mx-auto flex h-[72px] w-full max-w-7xl items-center justify-between px-gutter">
-        <Link href="/" className="font-display text-heading-sm font-bold text-stone-charcoal">
-          stuCart
-        </Link>
-        <nav className="hidden gap-8 md:flex">
-          <a href="#" className="font-body-sm text-body-sm text-on-surface-variant transition-opacity hover:opacity-80">
-            Explore
-          </a>
-          <a
-            href="#"
-            className="relative flex flex-col font-body-sm text-body-sm font-bold text-primary after:mt-1 after:h-[2px] after:w-full after:bg-primary after:content-['']"
-          >
-            Verify
-          </a>
-          <a href="#" className="font-body-sm text-body-sm text-on-surface-variant transition-opacity hover:opacity-80">
-            Rewards
-          </a>
+        <div className="flex flex-1 items-center justify-start">
+          <Link href="/" className="font-display text-heading-sm font-bold text-stone-charcoal">
+            stuCart
+          </Link>
+        </div>
+        <nav className="hidden items-center gap-8 font-body-sm md:flex">
+          <Link href="/books" className="text-on-surface-variant transition-colors duration-200 hover:text-primary">
+            Books
+          </Link>
+          <Link href="/product" className="text-on-surface-variant transition-colors duration-200 hover:text-primary">
+            Electronics
+          </Link>
+          <Link href="/stationery" className="text-on-surface-variant transition-colors duration-200 hover:text-primary">
+            Stationery
+          </Link>
+          <Link href="/sell" className="text-on-surface-variant transition-colors duration-200 hover:text-primary">
+            Sell
+          </Link>
         </nav>
-        <div className="flex items-center gap-4">
+        <div className="flex flex-1 items-center justify-end gap-4">
           <ShieldCheck className="h-6 w-6 cursor-pointer transition-opacity hover:opacity-80" />
           <div className="relative flex items-center">
             <UserCircle2 className="h-6 w-6 cursor-pointer transition-opacity hover:opacity-80" />

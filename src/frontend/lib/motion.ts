@@ -70,6 +70,7 @@ export const heroItem: Variants = {
 };
 
 /** Gentle up/down float loop for hero imagery. */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const floatLoop: any = {
   animate: {
     y: [0, -10, 0],

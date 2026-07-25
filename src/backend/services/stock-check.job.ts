@@ -1,4 +1,6 @@
-export function startStockCheckJob(prisma: any) {
+import type { PrismaClient } from '@prisma/client';
+
+export function startStockCheckJob(prisma: PrismaClient) {
   console.log("[Stock Check Job] Starting background stock check polling (every 30 seconds)...");
 
   // Run the check immediately on startup
@@ -11,7 +13,7 @@ export function startStockCheckJob(prisma: any) {
   }, 30000);
 }
 
-async function checkStock(prisma: any) {
+async function checkStock(prisma: PrismaClient) {
   try {
     const wishlistItems = await prisma.wishlistItem.findMany({
       include: {

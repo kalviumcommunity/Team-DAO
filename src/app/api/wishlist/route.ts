@@ -11,9 +11,9 @@ export async function GET(req: Request) {
 
     const items = await WishlistService.getUserWishlist(user.id);
     return NextResponse.json({ wishlist: items }, { status: 200 });
-  } catch (error: any) {
+  } catch (error: unknown) {
     return NextResponse.json(
-      { error: error.message || "Failed to fetch wishlist" },
+      { error: (error instanceof Error ? error.message : String(error)) || "Failed to fetch wishlist" },
       { status: 500 }
     );
   }
@@ -35,9 +35,9 @@ export async function POST(req: Request) {
 
     const item = await WishlistService.addToWishlist(user.id, listingId);
     return NextResponse.json({ item }, { status: 201 });
-  } catch (error: any) {
+  } catch (error: unknown) {
     return NextResponse.json(
-      { error: error.message || "Failed to add to wishlist" },
+      { error: (error instanceof Error ? error.message : String(error)) || "Failed to add to wishlist" },
       { status: 400 }
     );
   }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { ShieldCheck } from "lucide-react";
 import { Navbar } from "@/frontend/components/layout/Navbar";
@@ -13,7 +13,7 @@ import { FadeInSection, StaggerItem } from "@/frontend/components/motion/FadeInS
 import { addToCartItem, addToWishlistItem, getProductById, getProducts } from "@/frontend/lib/api";
 import type { Product } from "@/types";
 
-export default function ProductDetailPage() {
+function ProductDetailContent() {
   const searchParams = useSearchParams();
   const [product, setProduct] = useState<Product | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -193,5 +193,21 @@ export default function ProductDetailPage() {
 
       <Footer />
     </>
+  );
+}
+
+export default function ProductDetailPage() {
+  return (
+    <Suspense fallback={
+      <>
+        <Navbar activeHref="/product" />
+        <main className="mx-auto flex min-h-screen w-full max-w-[1200px] items-center justify-center px-container-margin py-20">
+          <p className="font-body-md text-sage-gray">Loading page…</p>
+        </main>
+        <Footer />
+      </>
+    }>
+      <ProductDetailContent />
+    </Suspense>
   );
 }

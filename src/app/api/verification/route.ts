@@ -18,9 +18,9 @@ export async function GET(req: Request) {
 
     const listings = await VerificationService.getPendingListings();
     return NextResponse.json({ listings }, { status: 200 });
-  } catch (error: any) {
+  } catch (error: unknown) {
     return NextResponse.json(
-      { error: error.message || "Failed to fetch pending verifications" },
+      { error: (error instanceof Error ? error.message : String(error)) || "Failed to fetch pending verifications" },
       { status: 500 }
     );
   }
@@ -42,9 +42,9 @@ export async function POST(req: Request) {
 
     const listing = await VerificationService.requestVerification(user.id, productId);
     return NextResponse.json({ listing }, { status: 201 });
-  } catch (error: any) {
+  } catch (error: unknown) {
     return NextResponse.json(
-      { error: error.message || "Failed to submit verification request" },
+      { error: (error instanceof Error ? error.message : String(error)) || "Failed to submit verification request" },
       { status: 400 }
     );
   }

@@ -15,9 +15,9 @@ export async function POST(req: Request) {
 
     const result = await AuthService.login({ email, password });
     return NextResponse.json(result, { status: 200 });
-  } catch (error: any) {
+  } catch (error: unknown) {
     return NextResponse.json(
-      { error: error.message || "Invalid credentials" },
+      { error: (error instanceof Error ? error.message : String(error)) || "Invalid credentials" },
       { status: 401 }
     );
   }
