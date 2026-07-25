@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { motion, useMotionValueEvent, useScroll } from "framer-motion";
 import { Heart, UserCircle2 } from "lucide-react";
@@ -15,9 +16,8 @@ export interface NavLink {
 const DEFAULT_LINKS: NavLink[] = [
   { label: "Books", href: "/books" },
   { label: "Electronics", href: "/product" },
-  { label: "Stationery", href: "#" },
+  { label: "Stationery", href: "/stationery" },
   { label: "Sell", href: "/sell" },
-  { label: "Exchange", href: "#" },
 ];
 
 interface NavbarProps {
@@ -33,6 +33,7 @@ interface NavbarProps {
  * hides itself on scroll-down / reveals on scroll-up like Vercel/Linear.
  */
 export function Navbar({ links = DEFAULT_LINKS, activeHref, minimal = false }: NavbarProps) {
+  const router = useRouter();
   const { scrollY } = useScroll();
   const [hidden, setHidden] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -53,9 +54,11 @@ export function Navbar({ links = DEFAULT_LINKS, activeHref, minimal = false }: N
       )}
     >
       <div className="mx-auto flex h-[72px] max-w-7xl items-center justify-between px-container-margin">
-        <Link href="/" className="flex-shrink-0 font-display text-heading-sm text-on-surface">
-          stuCart
-        </Link>
+        <div className="flex flex-1 items-center justify-start">
+          <Link href="/" className="flex-shrink-0 font-display text-heading-sm text-on-surface">
+            stuCart
+          </Link>
+        </div>
 
         {!minimal && (
           <nav className="hidden items-center gap-8 font-body-sm md:flex">
@@ -76,7 +79,7 @@ export function Navbar({ links = DEFAULT_LINKS, activeHref, minimal = false }: N
           </nav>
         )}
 
-        <div className="flex flex-shrink-0 items-center gap-4">
+        <div className="flex flex-1 flex-shrink-0 items-center justify-end gap-4">
           {!minimal && (
             <>
               <Link
@@ -92,7 +95,11 @@ export function Navbar({ links = DEFAULT_LINKS, activeHref, minimal = false }: N
               >
                 Sign in
               </Link>
-              <Button variant="primary" className="px-6 py-2 text-body-md">
+              <Button 
+                variant="primary" 
+                className="px-6 py-2 text-body-md"
+                onClick={() => router.push('/signup')}
+              >
                 Join Now
               </Button>
             </>

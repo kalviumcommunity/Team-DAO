@@ -13,9 +13,9 @@ export async function GET(req: Request) {
     const outgoing = await ExchangeService.getOutgoingRequests(user.id);
 
     return NextResponse.json({ incoming, outgoing }, { status: 200 });
-  } catch (error: any) {
+  } catch (error: unknown) {
     return NextResponse.json(
-      { error: error.message || "Failed to fetch exchange requests" },
+      { error: (error instanceof Error ? error.message : String(error)) || "Failed to fetch exchange requests" },
       { status: 500 }
     );
   }
@@ -46,9 +46,9 @@ export async function POST(req: Request) {
     );
 
     return NextResponse.json({ request }, { status: 201 });
-  } catch (error: any) {
+  } catch (error: unknown) {
     return NextResponse.json(
-      { error: error.message || "Failed to create exchange request" },
+      { error: (error instanceof Error ? error.message : String(error)) || "Failed to create exchange request" },
       { status: 400 }
     );
   }

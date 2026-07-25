@@ -15,9 +15,9 @@ export async function POST(req: Request) {
 
     const result = await AuthService.register({ name, email, password, college, role });
     return NextResponse.json(result, { status: 201 });
-  } catch (error: any) {
+  } catch (error: unknown) {
     return NextResponse.json(
-      { error: error.message || "An error occurred during registration" },
+      { error: (error instanceof Error ? error.message : String(error)) || "An error occurred during registration" },
       { status: 400 }
     );
   }

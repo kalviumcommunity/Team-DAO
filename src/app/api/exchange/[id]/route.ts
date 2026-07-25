@@ -26,9 +26,9 @@ export async function PUT(
 
     const updated = await ExchangeService.respondToRequest(user.id, id, status);
     return NextResponse.json({ request: updated }, { status: 200 });
-  } catch (error: any) {
+  } catch (error: unknown) {
     return NextResponse.json(
-      { error: error.message || "Failed to respond to exchange request" },
+      { error: (error instanceof Error ? error.message : String(error)) || "Failed to respond to exchange request" },
       { status: 400 }
     );
   }

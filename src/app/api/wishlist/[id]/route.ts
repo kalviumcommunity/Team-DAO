@@ -15,9 +15,9 @@ export async function DELETE(
 
     await WishlistService.removeFromWishlist(user.id, id);
     return NextResponse.json({ message: "Item removed from wishlist" }, { status: 200 });
-  } catch (error: any) {
+  } catch (error: unknown) {
     return NextResponse.json(
-      { error: error.message || "Failed to remove item from wishlist" },
+      { error: (error instanceof Error ? error.message : String(error)) || "Failed to remove item from wishlist" },
       { status: 400 }
     );
   }

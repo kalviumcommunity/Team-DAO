@@ -35,7 +35,7 @@ export class CartService {
     // Optimistically remove from wishlist
     try {
       await WishlistRepository.deleteByUserAndListing(userId, listingId);
-    } catch (err) {
+    } catch {
       // Ignore if not in wishlist
     }
 

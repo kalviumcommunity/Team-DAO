@@ -1,4 +1,5 @@
 const API_BASE_URL = typeof window !== "undefined" ? window.location.origin : "";
+import type { Product, CartItem, WishlistItem } from "@/types";
 
 function getAuthToken() {
   if (typeof window === "undefined") {
@@ -101,4 +102,60 @@ export async function registerUser(payload: {
 
 export async function getCurrentUser() {
   return apiRequest<{ user: { id: string; name: string; email: string; college: string; role: string } }>('/api/auth/me');
+}
+
+// Products
+export async function getProducts() {
+  const data = await apiRequest<{ listings: Product[] }>('/api/products');
+  return data.listings;
+}
+
+export async function getProductById(id: string) {
+  const data = await apiRequest<{ listing: Product }>(`/api/products/${id}`);
+  return data.listing;
+}
+
+// Cart
+export async function getCartItems() {
+  const data = await apiRequest<{ cart: CartItem[] }>('/api/cart');
+  return data.cart;
+}
+
+export async function addToCartItem(id: string, quantity = 1) {
+  return apiRequest<unknown>('/api/cart', {
+    method: 'POST',
+    body: JSON.stringify({ productId: id, quantity }),
+  });
+}
+
+export async function updateCartItemQuantity(id: string, quantity: number) {
+  return apiRequest<unknown>(`/api/cart/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify({ quantity }),
+  });
+}
+
+export async function removeCartItem(id: string) {
+  return apiRequest<unknown>(`/api/cart/${id}`, {
+    method: 'DELETE',
+  });
+}
+
+// Wishlist
+export async function getWishlistItems() {
+  const data = await apiRequest<{ wishlist: WishlistItem[] }>('/api/wishlist');
+  return data.wishlist;
+}
+
+export async function addToWishlistItem(id: string) {
+  return apiRequest<unknown>('/api/wishlist', {
+    method: 'POST',
+    body: JSON.stringify({ productId: id }),
+  });
+}
+
+export async function removeWishlistItem(id: string) {
+  return apiRequest<unknown>(`/api/wishlist/${id}`, {
+    method: 'DELETE',
+  });
 }

@@ -59,7 +59,7 @@ export async function getCurrentUser(req: Request | NextRequest): Promise<Authen
       college: user.college,
       role: user.role as "STUDENT" | "VERIFIER" | "ADMIN",
     };
-  } catch (error) {
+  } catch {
     return null;
   }
 }

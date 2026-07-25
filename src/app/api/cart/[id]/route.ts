@@ -22,9 +22,9 @@ export async function PUT(
 
     const item = await CartService.updateQuantity(user.id, id, parseInt(quantity));
     return NextResponse.json({ item }, { status: 200 });
-  } catch (error: any) {
+  } catch (error: unknown) {
     return NextResponse.json(
-      { error: error.message || "Failed to update cart item quantity" },
+      { error: (error instanceof Error ? error.message : String(error)) || "Failed to update cart item quantity" },
       { status: 400 }
     );
   }
@@ -43,9 +43,9 @@ export async function DELETE(
 
     await CartService.removeFromCart(user.id, id);
     return NextResponse.json({ message: "Item removed from cart" }, { status: 200 });
-  } catch (error: any) {
+  } catch (error: unknown) {
     return NextResponse.json(
-      { error: error.message || "Failed to remove item from cart" },
+      { error: (error instanceof Error ? error.message : String(error)) || "Failed to remove item from cart" },
       { status: 400 }
     );
   }

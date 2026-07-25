@@ -11,9 +11,9 @@ export async function GET(req: Request) {
 
     const items = await CartService.getUserCart(user.id);
     return NextResponse.json({ cart: items }, { status: 200 });
-  } catch (error: any) {
+  } catch (error: unknown) {
     return NextResponse.json(
-      { error: error.message || "Failed to fetch cart" },
+      { error: (error instanceof Error ? error.message : String(error)) || "Failed to fetch cart" },
       { status: 500 }
     );
   }
@@ -40,9 +40,9 @@ export async function POST(req: Request) {
     );
 
     return NextResponse.json({ item }, { status: 201 });
-  } catch (error: any) {
+  } catch (error: unknown) {
     return NextResponse.json(
-      { error: error.message || "Failed to add to cart" },
+      { error: (error instanceof Error ? error.message : String(error)) || "Failed to add to cart" },
       { status: 400 }
     );
   }

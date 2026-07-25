@@ -69,7 +69,6 @@ export function ListingForm({ onSubmit, submitting = false }: ListingFormProps) 
         <FormField label="Item name" htmlFor="item-name">
           <TextInput
             id="item-name"
-            name="item-name"
             placeholder="e.g., Engineering Mathematics 3rd Ed."
             required
             value={formData.title}
@@ -120,7 +119,6 @@ export function ListingForm({ onSubmit, submitting = false }: ListingFormProps) 
             </span>
             <TextInput
               id="price"
-              name="price"
               type="number"
               placeholder="0.00"
               required
@@ -135,7 +133,6 @@ export function ListingForm({ onSubmit, submitting = false }: ListingFormProps) 
         <FormField label="Description" htmlFor="description">
           <TextArea
             id="description"
-            name="description"
             rows={4}
             placeholder="Describe the item, any flaws, or what you'd accept in exchange..."
             name="description"
