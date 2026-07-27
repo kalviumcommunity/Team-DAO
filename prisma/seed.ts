@@ -229,7 +229,7 @@ async function main() {
       price: "0.00",
       condition: "LIKE_NEW",
       durationUsed: "1 semester",
-      category: "Books",
+      category: "Lab Gear",
       stock: 1,
       sellerId: student1.id,
       status: "ACTIVE",
