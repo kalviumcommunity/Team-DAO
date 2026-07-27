@@ -222,8 +222,12 @@ function mapDbWishlistItemToWishlistItem(wishlistItem: any): WishlistItem {
 }
 
 // Products
-export async function getProducts() {
-  const data = await apiRequest<{ listings: any[] }>('/api/products');
+export async function getProducts(params?: { category?: string }) {
+  let url = '/api/products';
+  if (params?.category) {
+    url += `?category=${encodeURIComponent(params.category)}`;
+  }
+  const data = await apiRequest<{ listings: any[] }>(url);
   return data.listings.map(mapDbListingToProduct);
 }
 
