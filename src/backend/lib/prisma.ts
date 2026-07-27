@@ -1,6 +1,7 @@
-import { PrismaClient } from '@/generated/prisma/client';
+import { PrismaClient } from '@prisma/client';
 
 const prismaClientSingleton = () => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return new PrismaClient({} as any);
 };
 

@@ -5,6 +5,7 @@ export interface Product {
   originalPrice?: string;
   image: string;
   imageAlt: string;
+  description?: string;
   condition?: string;
   trending?: boolean;
 }

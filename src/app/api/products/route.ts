@@ -27,9 +27,9 @@ export async function GET(req: Request) {
     });
 
     return NextResponse.json({ listings }, { status: 200 });
-  } catch (error: any) {
+  } catch (error: unknown) {
     return NextResponse.json(
-      { error: error.message || "Failed to fetch listings" },
+      { error: (error instanceof Error ? error.message : String(error)) || "Failed to fetch listings" },
       { status: 500 }
     );
   }
@@ -75,9 +75,9 @@ export async function POST(req: Request) {
     });
 
     return NextResponse.json({ listing }, { status: 201 });
-  } catch (error: any) {
+  } catch (error: unknown) {
     return NextResponse.json(
-      { error: error.message || "Failed to create listing" },
+      { error: (error instanceof Error ? error.message : String(error)) || "Failed to create listing" },
       { status: 400 }
     );
   }

@@ -1,11 +1,14 @@
 "use client";
 
+import { useState, type MouseEvent } from "react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Heart } from "lucide-react";
 import type { Product } from "@/types";
 import { Badge } from "@/frontend/components/common/Badge";
 import { Button } from "@/frontend/components/common/Button";
+import { addToCartItem, addToWishlistItem } from "@/frontend/lib/api";
 import { cardHover, usePrefersReducedMotion } from "@/frontend/lib/motion";
 
 interface ProductCardProps {
@@ -17,7 +20,37 @@ interface ProductCardProps {
 /** Reusable product tile: hover lift + border transition + image zoom, used on Home and Browse. */
 export function ProductCard({ product, layout = "hero" }: ProductCardProps) {
   const prefersReducedMotion = usePrefersReducedMotion();
+  const router = useRouter();
   const isHero = layout === "hero";
+  const [feedback, setFeedback] = useState<string | null>(null);
+
+  const handleOpenDetail = () => {
+    router.push(`/product?id=${product.id}`);
+  };
+
+  const handleAddToCart = async (event: MouseEvent<HTMLButtonElement>) => {
+    event.stopPropagation();
+    setFeedback("Adding to cart...");
+
+    try {
+      await addToCartItem(product.id, 1);
+      setFeedback("Added to cart");
+    } catch {
+      setFeedback("Could not add to cart");
+    }
+  };
+
+  const handleAddToWishlist = async (event: MouseEvent<HTMLButtonElement>) => {
+    event.stopPropagation();
+    setFeedback("Adding to wishlist...");
+
+    try {
+      await addToWishlistItem(product.id);
+      setFeedback("Added to wishlist");
+    } catch {
+      setFeedback("Could not add to wishlist");
+    }
+  };
 
   return (
     <motion.article
@@ -25,6 +58,15 @@ export function ProductCard({ product, layout = "hero" }: ProductCardProps) {
       whileHover={prefersReducedMotion ? undefined : "hover"}
       animate="rest"
       variants={cardHover}
+      onClick={handleOpenDetail}
+      onKeyDown={(event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          handleOpenDetail();
+        }
+      }}
+      role="button"
+      tabIndex={0}
       className={
         isHero
           ? "group relative flex h-[400px] cursor-pointer flex-col overflow-hidden rounded-[24px] border border-transparent bg-cream-paper p-card-padding shadow-ambient transition-colors duration-300 hover:border-silver-border"
@@ -79,17 +121,25 @@ export function ProductCard({ product, layout = "hero" }: ProductCardProps) {
             )}
           </p>
           <div className="mt-auto flex gap-3">
-            <Button variant="primary" className="flex-1 px-0 py-2.5 text-[14px]">
+            <Button
+              variant="primary"
+              type="button"
+              onClick={handleAddToCart}
+              className="flex-1 px-0 py-2.5 text-[14px]"
+            >
               Add
             </Button>
             <Button
               variant="outline"
+              type="button"
+              onClick={handleAddToWishlist}
               className="h-10 w-10 rounded-full !p-0"
               aria-label={`Add ${product.name} to wishlist`}
             >
               <Heart className="h-5 w-5" />
             </Button>
           </div>
+          {feedback && <p className="mt-3 text-[12px] text-sage-gray">{feedback}</p>}
         </div>
       )}
     </motion.article>

@@ -142,7 +142,7 @@
 
 body {
   background-color: var(--color-mint-wash);
-  color: var(--color-on-surface);
+  color: var(--color-stone-charcoal);
 }
 
 .material-symbols-outlined {
@@ -161,4 +161,12 @@ body {
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+}
+
+@utility whisper-shadow {
+  box-shadow: rgba(0, 0, 0, 0.09) 0px 0px 28px 0px;
+}
+
+@utility vivid-lime-gradient-bg {
+  background: linear-gradient(90deg, #82ff87 0%, #a3fda7 50%, #deff82 100%);
 }

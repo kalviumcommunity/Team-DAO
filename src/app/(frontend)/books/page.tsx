@@ -1,13 +1,47 @@
+"use client";
 
+import { useEffect, useState } from "react";
 import { Navbar } from "@/frontend/components/layout/Navbar";
 import { Footer } from "@/frontend/components/layout/Footer";
 import { ProductCard } from "@/frontend/components/product/ProductCard";
 import { BooksFilterBar } from "@/frontend/components/product/BooksFilterBar";
 import { Button } from "@/frontend/components/common/Button";
 import { FadeInSection, StaggerItem } from "@/frontend/components/motion/FadeInSection";
-import { BOOK_PRODUCTS } from "@/frontend/lib/mock-data";
+import { getProducts } from "@/frontend/lib/api";
+import type { Product } from "@/types";
 
 export default function BooksPage() {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadProducts() {
+      try {
+        const listings = await getProducts();
+        if (isMounted) {
+          setProducts(listings);
+        }
+      } catch (err) {
+        if (isMounted) {
+          setError(err instanceof Error ? err.message : "Unable to load products.");
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    }
+
+    void loadProducts();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   return (
     <>
       <Navbar activeHref="/books" />
@@ -25,23 +59,29 @@ export default function BooksPage() {
               Books
             </h1>
             <span className="pb-2 font-body-sm text-body-sm text-sage-gray">
-              {BOOK_PRODUCTS.length * 24} items
+              {products.length} items
             </span>
           </div>
         </FadeInSection>
 
         <BooksFilterBar />
 
-        <FadeInSection
-          stagger
-          className="mb-16 grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3"
-        >
-          {BOOK_PRODUCTS.map((book) => (
-            <StaggerItem key={book.id}>
-              <ProductCard product={book} layout="compact" />
-            </StaggerItem>
-          ))}
-        </FadeInSection>
+        {isLoading ? (
+          <p className="mb-16 text-center text-sage-gray">Loading products...</p>
+        ) : error ? (
+          <p className="mb-16 text-center text-red-600">{error}</p>
+        ) : (
+          <FadeInSection
+            stagger
+            className="mb-16 grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3"
+          >
+            {products.map((book) => (
+              <StaggerItem key={book.id}>
+                <ProductCard product={book} layout="compact" />
+              </StaggerItem>
+            ))}
+          </FadeInSection>
+        )}
 
         <FadeInSection as="div" className="flex justify-center">
           <Button variant="outline" className="border-stone-charcoal text-stone-charcoal hover:bg-stone-charcoal hover:text-white">

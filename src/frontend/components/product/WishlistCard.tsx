@@ -10,13 +10,19 @@ import { IconButton } from "@/frontend/components/common/IconButton";
 import { cardHover, usePrefersReducedMotion } from "@/frontend/lib/motion";
 import { cn } from "@/frontend/lib/cn";
 
+interface WishlistCardProps {
+  item: WishlistItem;
+  onRemove?: (id: string) => void;
+  onAddToCart?: (id: string) => void;
+}
+
 const STOCK_LABEL: Record<WishlistItem["stock"], string> = {
   "in-stock": "In stock",
   "low-stock": "Only 1 left",
   "out-of-stock": "Out of Stock",
 };
 
-export function WishlistCard({ item }: { item: WishlistItem }) {
+export function WishlistCard({ item, onRemove, onAddToCart }: WishlistCardProps) {
   const prefersReducedMotion = usePrefersReducedMotion();
   const isOutOfStock = item.stock === "out-of-stock";
 
@@ -97,10 +103,15 @@ export function WishlistCard({ item }: { item: WishlistItem }) {
           variant="primary"
           disabled={isOutOfStock}
           className={cn("px-6 py-3", isOutOfStock && "bg-warm-mist text-sage-gray")}
+          onClick={() => onAddToCart?.(item.id)}
         >
           Add to Cart
         </Button>
-        <IconButton variant="outline" aria-label={`Remove ${item.name} from wishlist`}>
+        <IconButton
+          variant="outline"
+          aria-label={`Remove ${item.name} from wishlist`}
+          onClick={() => onRemove?.(item.id)}
+        >
           <Trash2 className="h-5 w-5" />
         </IconButton>
       </div>

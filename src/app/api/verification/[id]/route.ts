@@ -39,9 +39,9 @@ export async function PUT(
     );
 
     return NextResponse.json({ verification }, { status: 200 });
-  } catch (error: any) {
+  } catch (error: unknown) {
     return NextResponse.json(
-      { error: error.message || "Failed to process verification" },
+      { error: (error instanceof Error ? error.message : String(error)) || "Failed to process verification" },
       { status: 400 }
     );
   }

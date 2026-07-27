@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import { Navbar } from "@/frontend/components/layout/Navbar";
@@ -7,11 +8,42 @@ import { Footer } from "@/frontend/components/layout/Footer";
 import { Button } from "@/frontend/components/common/Button";
 import { ProductCard } from "@/frontend/components/product/ProductCard";
 import { FadeInSection, StaggerItem } from "@/frontend/components/motion/FadeInSection";
+import { getProducts } from "@/frontend/lib/api";
 import { heroItem, heroStagger, usePrefersReducedMotion } from "@/frontend/lib/motion";
 import { TRENDING_PRODUCTS } from "@/frontend/lib/mock-data";
+import type { Product } from "@/types";
 
 export default function HomePage() {
   const prefersReducedMotion = usePrefersReducedMotion();
+  const [products, setProducts] = useState<Product[]>(TRENDING_PRODUCTS);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadProducts = async () => {
+      try {
+        const liveProducts = await getProducts();
+        if (isMounted) {
+          setProducts(liveProducts.length > 0 ? liveProducts : TRENDING_PRODUCTS);
+        }
+      } catch {
+        if (isMounted) {
+          setProducts(TRENDING_PRODUCTS);
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    void loadProducts();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   return (
     <>
@@ -72,11 +104,15 @@ export default function HomePage() {
             stagger
             className="grid grid-cols-1 gap-[30px] md:grid-cols-2 lg:grid-cols-3"
           >
-            {TRENDING_PRODUCTS.map((product) => (
-              <StaggerItem key={product.id}>
-                <ProductCard product={product} layout="hero" />
-              </StaggerItem>
-            ))}
+            {isLoading ? (
+              <div className="col-span-full text-center text-sage-gray">Loading featured listings…</div>
+            ) : (
+              products.map((product) => (
+                <StaggerItem key={product.id}>
+                  <ProductCard product={product} layout="hero" />
+                </StaggerItem>
+              ))
+            )}
           </FadeInSection>
         </section>
 
