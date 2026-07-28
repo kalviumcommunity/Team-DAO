@@ -127,7 +127,7 @@ export default function CartPage() {
             ) : null}
 
             <div className="flex flex-col gap-[60px] lg:flex-row">
-              <FadeInSection stagger as="div" className="flex w-full flex-col gap-6 lg:w-[65%]">
+              <div className="flex w-full flex-col gap-6 lg:w-[65%]">
                 {loading ? (
                   <p className="rounded-2xl border border-silver-border bg-cream-paper px-4 py-6 text-center text-sage-gray">
                     Loading your cart...
@@ -138,17 +138,17 @@ export default function CartPage() {
                   </p>
                 ) : (
                   items.map((item) => (
-                    <StaggerItem key={item.id}>
+                    <div key={item.id}>
                       <CartLineItem
                         item={item}
                         onIncrement={(id) => void updateQuantity(id, 1)}
                         onDecrement={(id) => void updateQuantity(id, -1)}
                         onRemove={(id) => void removeItem(id)}
                       />
-                    </StaggerItem>
+                    </div>
                   ))
                 )}
-              </FadeInSection>
+              </div>
 
               <OrderSummary subtotal={subtotal} total={subtotal} />
             </div>

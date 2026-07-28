@@ -203,7 +203,31 @@ export function getLocalWishlist(): WishlistItem[] {
   if (typeof window === "undefined") return [];
   try {
     const raw = localStorage.getItem("stucart_local_wishlist");
-    return raw ? JSON.parse(raw) : [];
+    if (raw) return JSON.parse(raw);
+    const initial: WishlistItem[] = [
+      {
+        id: "advanced-calculus",
+        name: "Advanced Calculus (11th Edition)",
+        price: "$45.00",
+        image: "https://lh3.googleusercontent.com/aida-public/AB6AXuDUadn9Rn9EYmMq-t4hsuXONy6jg9b0x8ROg06uct3VgB4TO7V_QWtMkGMcUp7-49NlNLqrpdJil5da3gZKLhDCPwLazEZaXhtSoJ5Vf-WJLqLsAQ4U0V9whyeEkV5BvlfDvAowuzC-d-v-F-ZCcJZRwm1ShpRqLbjuC6RRt4fSJoUnX8CIP61KTLsxUtHkWN47UMigGvlMSMo3wCfobsC3cDvqY09IRC8fAt1uO7j55bG5u_Q03EPLiw5-n08lORuIFsC70kezErUe",
+        imageAlt: "Advanced Calculus hardcover textbook on a light surface",
+        description: "Lightly annotated in Chapter 3 & 4. Perfect for MATH 201.",
+        condition: "Good",
+        stock: "in-stock",
+      },
+      {
+        id: "macbook-air-m2",
+        name: "MacBook Air M2 2022 (8GB / 256GB)",
+        price: "$799.00",
+        image: "https://lh3.googleusercontent.com/aida-public/AB6AXuCVXI0km4gKCsHrTvDB7UYFkPCTvG5RPRG8AInkth1R1oBN7g5mFjW3J0_aLVCksmhDfi_g7viwm83mIh_VY03om8BHiCeRhIsLPh_e2HFDCPWiwFcd75rGyntZQLp5bbzahe3uD6U5U3CLluW0MFCngKOLccDFo_usTXBD85luvCPW4iwd_D-yo1WgjxLqDwmbb23RuUpZlwHNSFbbFV1lMq0eGnhdawI1kNQd9EvmqcVGp0msGcUbf9WvXXcFJ_7Ibl7_9PaDZJNM",
+        imageAlt: "Silver MacBook Air M2 laptop on a white background",
+        description: "Space Gray, 95% battery health. Comes with original charger and box.",
+        condition: "Like New",
+        stock: "in-stock",
+      },
+    ];
+    localStorage.setItem("stucart_local_wishlist", JSON.stringify(initial));
+    return initial;
   } catch {
     return [];
   }
@@ -222,7 +246,20 @@ export function getLocalCart(): CartItem[] {
   if (typeof window === "undefined") return [];
   try {
     const raw = localStorage.getItem("stucart_local_cart");
-    return raw ? JSON.parse(raw) : [];
+    if (raw) return JSON.parse(raw);
+    const initial: CartItem[] = [
+      {
+        id: "ti-84-calculator",
+        name: "TI-84 Plus CE Graphing Calculator",
+        price: "$69.00",
+        image: "https://lh3.googleusercontent.com/aida-public/AB6AXuC37qcJNpUdr-R5YxWgO3inqO6KGtd2yuy4AjbOPccE9SJzK2r5piGXMT6JzOj8njpt_h_wKY-cxAHqlGfyHddoe1EEK3cHypzDlvNuqDGKBjOuzfBOpiseNnav4oFMO43QRgDWF59AsMQdCXfjJo0SL_1RKJLBjeOyaNctVjrU5maJcyyZNlsIwYbhbwLcsxYdkwFazbqLZ0A10logEVhp3H1rTX8KKrs-Zc6b2GBkG0mmybHuIttIutdLyqm1q1n9lTbQALqlbZGp",
+        imageAlt: "Black TI-84 Plus CE graphing calculator on a white background",
+        quantity: 1,
+        verified: true,
+      },
+    ];
+    localStorage.setItem("stucart_local_cart", JSON.stringify(initial));
+    return initial;
   } catch {
     return [];
   }
