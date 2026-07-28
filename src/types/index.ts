@@ -10,6 +10,7 @@ export interface Product {
   category?: string;
   durationUsed?: string;
   trending?: boolean;
+  availableStock?: number;
 }
 
 export type StockStatus = "in-stock" | "low-stock" | "out-of-stock";
@@ -17,11 +18,13 @@ export type StockStatus = "in-stock" | "low-stock" | "out-of-stock";
 export interface WishlistItem extends Product {
   description: string;
   stock: StockStatus;
+  availableStock?: number;
 }
 
 export interface CartItem extends Product {
   quantity: number;
   verified?: boolean;
+  availableStock?: number;
 }
 
 export interface Seller {

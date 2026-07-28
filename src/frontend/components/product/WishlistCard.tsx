@@ -102,10 +102,10 @@ export function WishlistCard({ item, onRemove, onAddToCart }: WishlistCardProps)
         <Button
           variant="primary"
           disabled={isOutOfStock}
-          className={cn("px-6 py-3", isOutOfStock && "bg-warm-mist text-sage-gray")}
+          className={cn("px-6 py-3", isOutOfStock && "bg-warm-mist text-sage-gray cursor-not-allowed")}
           onClick={() => onAddToCart?.(item.id)}
         >
-          Add to Cart
+          {isOutOfStock ? "Out of Stock" : "Move to Cart"}
         </Button>
         <IconButton
           variant="outline"
