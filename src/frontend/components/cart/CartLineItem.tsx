@@ -18,6 +18,15 @@ export function CartLineItem({ item, onIncrement, onDecrement, onRemove }: CartL
   const prefersReducedMotion = usePrefersReducedMotion();
   const availableStock = item.availableStock ?? 5;
   const isMaxStockReached = item.quantity >= availableStock;
+  const isSingleStockAvailable = availableStock === 1;
+
+  // Calculate total price for this line item (unitPrice * quantity)
+  const unitPriceValue = Number.parseFloat((item.price || "0").replace(/[^0-9.-]+/g, ""));
+  const totalPriceValue = Number.isNaN(unitPriceValue) ? 0 : unitPriceValue * item.quantity;
+  const formattedTotalPrice = new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+  }).format(totalPriceValue);
 
   return (
     <motion.div
@@ -46,7 +55,9 @@ export function CartLineItem({ item, onIncrement, onDecrement, onRemove }: CartL
         )}
         {isMaxStockReached && (
           <p className="mt-1.5 font-caption text-xs font-semibold text-amber-700 bg-amber-50 rounded-full px-2.5 py-0.5 inline-block border border-amber-200/60">
-            Maximum available stock reached ({availableStock})
+            {isSingleStockAvailable
+              ? "Only 1 available in stock"
+              : `Maximum available stock reached (${availableStock})`}
           </p>
         )}
       </div>
@@ -79,8 +90,11 @@ export function CartLineItem({ item, onIncrement, onDecrement, onRemove }: CartL
         </div>
       </div>
 
-      <div className="flex min-w-[100px] flex-shrink-0 flex-col items-end gap-2 text-right">
-        <span className="font-body-md font-bold text-on-surface">{item.price}</span>
+      <div className="flex min-w-[110px] flex-shrink-0 flex-col items-end gap-1 text-right">
+        <span className="font-body-md font-bold text-on-surface">{formattedTotalPrice}</span>
+        {item.quantity > 1 && (
+          <span className="font-caption text-xs text-sage-gray">({item.price} each)</span>
+        )}
         <IconButton
           size="sm"
           variant="danger-hover"

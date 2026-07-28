@@ -193,7 +193,7 @@ function mapDbCartItemToCartItem(cartItem: any): CartItem {
   const rawStock = cartItem.listing?.stock;
   return {
     ...mappedProduct,
-    id: cartItem.id, // the cart item's actual ID
+    id: cartItem.listingId || cartItem.productId || mappedProduct.id || cartItem.id,
     quantity: cartItem.quantity || 1,
     verified: cartItem.listing?.verified || false,
     availableStock: typeof rawStock === "number" ? rawStock : 5,
@@ -367,13 +367,35 @@ export async function getCartItems() {
     const mergedMap = new Map<string, CartItem>();
     for (const item of [...localItems, ...apiItems]) {
       if (item && item.id) {
-        mergedMap.set(item.id, item);
+        if (mergedMap.has(item.id)) {
+          const existing = mergedMap.get(item.id)!;
+          const maxStock = existing.availableStock ?? item.availableStock ?? 5;
+          existing.quantity = Math.min(maxStock, existing.quantity + item.quantity);
+        } else {
+          mergedMap.set(item.id, { ...item });
+        }
       }
     }
-    return Array.from(mergedMap.values());
+    const result = Array.from(mergedMap.values());
+    saveLocalCart(result);
+    return result;
   } catch (err) {
     if (localItems.length > 0) {
-      return localItems;
+      const mergedMap = new Map<string, CartItem>();
+      for (const item of localItems) {
+        if (item && item.id) {
+          if (mergedMap.has(item.id)) {
+            const existing = mergedMap.get(item.id)!;
+            const maxStock = existing.availableStock ?? item.availableStock ?? 5;
+            existing.quantity = Math.min(maxStock, existing.quantity + item.quantity);
+          } else {
+            mergedMap.set(item.id, { ...item });
+          }
+        }
+      }
+      const result = Array.from(mergedMap.values());
+      saveLocalCart(result);
+      return result;
     }
     throw err;
   }
@@ -381,18 +403,22 @@ export async function getCartItems() {
 
 export async function addToCartItem(id: string, quantity = 1, product?: Partial<Product>) {
   const currentLocal = getLocalCart();
-  const existingIndex = currentLocal.findIndex((item) => item.id === id);
+  const existingIndex = currentLocal.findIndex((item) => item.id === id || item.name === product?.name);
   if (existingIndex >= 0) {
-    currentLocal[existingIndex].quantity += quantity;
+    const item = currentLocal[existingIndex];
+    const maxStock = item.availableStock ?? product?.availableStock ?? 5;
+    item.quantity = Math.min(maxStock, item.quantity + quantity);
   } else {
+    const maxStock = product?.availableStock ?? 5;
     const newItem: CartItem = {
       id,
       name: product?.name || "Product",
       price: product?.price || "$0.00",
       image: product?.image || "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&q=80&w=600",
       imageAlt: product?.imageAlt || product?.name || "Product image",
-      quantity,
+      quantity: Math.min(maxStock, quantity),
       verified: true,
+      availableStock: maxStock,
     };
     currentLocal.unshift(newItem);
   }
