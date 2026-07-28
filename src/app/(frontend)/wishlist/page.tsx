@@ -2,23 +2,37 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Heart } from "lucide-react";
+import { CheckCircle2, AlertCircle, Heart, X } from "lucide-react";
 import { Navbar } from "@/frontend/components/layout/Navbar";
 import { Footer } from "@/frontend/components/layout/Footer";
 import { Button } from "@/frontend/components/common/Button";
 import { WishlistCard } from "@/frontend/components/product/WishlistCard";
-import { FadeInSection, StaggerItem } from "@/frontend/components/motion/FadeInSection";
-import { addToCartItem, getAuthToken, getWishlistItems, removeWishlistItem } from "@/frontend/lib/api";
+import { FadeInSection } from "@/frontend/components/motion/FadeInSection";
+import {
+  addToCartItem,
+  getAuthToken,
+  getWishlistItems,
+  pollWishlistStockStatus,
+  removeWishlistItem,
+  saveLocalWishlist,
+} from "@/frontend/lib/api";
 import type { WishlistItem } from "@/types";
+
+interface ToastNotification {
+  type: "success" | "error";
+  message: string;
+}
 
 export default function WishlistPage() {
   const router = useRouter();
   const [items, setItems] = useState<WishlistItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [toast, setToast] = useState<ToastNotification | null>(null);
 
   const isUnauthenticated = !getAuthToken() || error === "Unauthorized";
 
+  // Initial Wishlist Fetching
   useEffect(() => {
     let isMounted = true;
 
@@ -54,21 +68,78 @@ export default function WishlistPage() {
     };
   }, []);
 
+  // 30-Second Stock Polling Hook (Active Wishlist Items Only)
+  useEffect(() => {
+    if (!items || items.length === 0) return;
+
+    const intervalId = setInterval(async () => {
+      try {
+        const updated = await pollWishlistStockStatus(items);
+        setItems(updated);
+      } catch {
+        // Silent polling handling
+      }
+    }, 30000);
+
+    return () => {
+      clearInterval(intervalId);
+    };
+  }, [items]);
+
   const handleRemove = async (id: string) => {
+    const targetItem = items.find((i) => i.id === id);
+    const previousItems = [...items];
+    setItems((current) => current.filter((item) => item.id !== id));
+
     try {
       await removeWishlistItem(id);
-      setItems((current) => current.filter((item) => item.id !== id));
+      setToast({
+        type: "success",
+        message: `"${targetItem?.name || "Item"}" removed from wishlist.`,
+      });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to remove item from wishlist.");
+      setItems(previousItems);
+      saveLocalWishlist(previousItems);
+      setToast({
+        type: "error",
+        message: err instanceof Error ? err.message : "Unable to remove item from wishlist.",
+      });
     }
   };
 
-  const handleAddToCart = async (id: string) => {
+  // Optimistic Move-to-Cart Flow & Out-of-Stock Validation
+  const handleMoveToCart = async (id: string) => {
+    const targetItem = items.find((item) => item.id === id);
+    if (!targetItem) return;
+
+    // Requirement 4: Out-of-Stock Pre-Validation
+    if (targetItem.stock === "out-of-stock" || targetItem.availableStock === 0) {
+      setToast({
+        type: "error",
+        message: "This item is out of stock and cannot be added to your cart.",
+      });
+      return;
+    }
+
+    // Requirement 3: Optimistic Removal from Wishlist
+    const previousItems = [...items];
+    setItems((current) => current.filter((item) => item.id !== id));
+
     try {
-      await addToCartItem(id, 1);
-      setError(null);
+      await addToCartItem(id, 1, targetItem);
+      await removeWishlistItem(id);
+      setToast({
+        type: "success",
+        message: `"${targetItem.name}" moved to cart successfully!`,
+      });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to add item to cart.");
+      // Rollback state on error
+      setItems(previousItems);
+      saveLocalWishlist(previousItems);
+      setToast({
+        type: "error",
+        message: err instanceof Error ? err.message : "Failed to move item to cart. Restored to wishlist.",
+      });
     }
   };
 
@@ -88,6 +159,33 @@ export default function WishlistPage() {
             We check stock every 30 seconds so you don&apos;t miss out.
           </p>
         </FadeInSection>
+
+        {/* Toast Notification Banner */}
+        {toast && (
+          <div
+            className={`mx-auto mb-6 flex max-w-2xl items-center justify-between rounded-2xl border px-4 py-3 shadow-sm transition-all duration-300 ${
+              toast.type === "error"
+                ? "border-red-200 bg-red-50 text-red-800"
+                : "border-emerald-200 bg-emerald-50 text-emerald-800"
+            }`}
+          >
+            <div className="flex items-center gap-2">
+              {toast.type === "error" ? (
+                <AlertCircle className="h-5 w-5 text-red-600" />
+              ) : (
+                <CheckCircle2 className="h-5 w-5 text-emerald-600" />
+              )}
+              <span className="font-body-sm text-sm font-medium">{toast.message}</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setToast(null)}
+              className="rounded-full p-1 transition-colors hover:bg-black/5 cursor-pointer"
+            >
+              <X className="h-4 w-4 opacity-70" />
+            </button>
+          </div>
+        )}
 
         {isUnauthenticated ? (
           <div className="mx-auto max-w-md rounded-2xl border border-silver-border bg-cream-paper p-8 text-center shadow-xs">
@@ -122,7 +220,11 @@ export default function WishlistPage() {
               ) : (
                 items.map((item) => (
                   <div key={item.id}>
-                    <WishlistCard item={item} onRemove={handleRemove} onAddToCart={handleAddToCart} />
+                    <WishlistCard
+                      item={item}
+                      onRemove={handleRemove}
+                      onAddToCart={handleMoveToCart}
+                    />
                   </div>
                 ))
               )}

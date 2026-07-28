@@ -16,6 +16,8 @@ interface CartLineItemProps {
 
 export function CartLineItem({ item, onIncrement, onDecrement, onRemove }: CartLineItemProps) {
   const prefersReducedMotion = usePrefersReducedMotion();
+  const availableStock = item.availableStock ?? 5;
+  const isMaxStockReached = item.quantity >= availableStock;
 
   return (
     <motion.div
@@ -42,9 +44,14 @@ export function CartLineItem({ item, onIncrement, onDecrement, onRemove }: CartL
         {item.verified && (
           <p className="mt-1 font-caption text-caption text-sage-gray">Used · Verified by CAC</p>
         )}
+        {isMaxStockReached && (
+          <p className="mt-1.5 font-caption text-xs font-semibold text-amber-700 bg-amber-50 rounded-full px-2.5 py-0.5 inline-block border border-amber-200/60">
+            Maximum available stock reached ({availableStock})
+          </p>
+        )}
       </div>
 
-      <div className="flex items-center gap-4">
+      <div className="flex flex-col items-center gap-1">
         <div className="flex items-center rounded-full border border-silver-border px-2 py-1">
           <IconButton
             size="sm"
@@ -54,14 +61,20 @@ export function CartLineItem({ item, onIncrement, onDecrement, onRemove }: CartL
           >
             <Minus className="h-[18px] w-[18px]" />
           </IconButton>
-          <span className="w-8 text-center font-body-sm text-body-sm">{item.quantity}</span>
+          <span className="w-8 text-center font-body-sm text-body-sm font-semibold">{item.quantity}</span>
           <IconButton
             size="sm"
             variant="plain"
+            disabled={isMaxStockReached}
             aria-label={`Increase quantity of ${item.name}`}
-            onClick={() => onIncrement?.(item.id)}
+            onClick={() => !isMaxStockReached && onIncrement?.(item.id)}
+            className={
+              isMaxStockReached
+                ? "opacity-30 cursor-not-allowed pointer-events-none font-normal"
+                : ""
+            }
           >
-            <Plus className="h-[18px] w-[18px]" />
+            <Plus className={`h-[18px] w-[18px] ${isMaxStockReached ? "opacity-30 stroke-1" : ""}`} />
           </IconButton>
         </div>
       </div>

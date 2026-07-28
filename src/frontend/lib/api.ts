@@ -1,5 +1,5 @@
 const API_BASE_URL = typeof window !== "undefined" ? window.location.origin : "";
-import type { Product, CartItem, WishlistItem } from "@/types";
+import type { Product, CartItem, WishlistItem, StockStatus } from "@/types";
 
 export function getAuthToken() {
   if (typeof window === "undefined") {
@@ -190,11 +190,13 @@ function mapDbListingToProduct(listing: any): Product {
 function mapDbCartItemToCartItem(cartItem: any): CartItem {
   if (!cartItem) return cartItem;
   const mappedProduct = mapDbListingToProduct(cartItem.listing);
+  const rawStock = cartItem.listing?.stock;
   return {
     ...mappedProduct,
     id: cartItem.id, // the cart item's actual ID
     quantity: cartItem.quantity || 1,
-    verified: cartItem.listing?.verified || false
+    verified: cartItem.listing?.verified || false,
+    availableStock: typeof rawStock === "number" ? rawStock : 5,
   };
 }
 
@@ -214,6 +216,7 @@ export function getLocalWishlist(): WishlistItem[] {
         description: "Lightly annotated in Chapter 3 & 4. Perfect for MATH 201.",
         condition: "Good",
         stock: "in-stock",
+        availableStock: 5,
       },
       {
         id: "macbook-air-m2",
@@ -224,6 +227,7 @@ export function getLocalWishlist(): WishlistItem[] {
         description: "Space Gray, 95% battery health. Comes with original charger and box.",
         condition: "Like New",
         stock: "in-stock",
+        availableStock: 3,
       },
     ];
     localStorage.setItem("stucart_local_wishlist", JSON.stringify(initial));
@@ -256,6 +260,7 @@ export function getLocalCart(): CartItem[] {
         imageAlt: "Black TI-84 Plus CE graphing calculator on a white background",
         quantity: 1,
         verified: true,
+        availableStock: 5,
       },
     ];
     localStorage.setItem("stucart_local_cart", JSON.stringify(initial));
@@ -293,8 +298,48 @@ function mapDbWishlistItemToWishlistItem(wishlistItem: any): WishlistItem {
     ...mappedProduct,
     id: wishlistItem.listingId || mappedProduct.id,
     description: wishlistItem.listing?.description || mappedProduct.description || "",
-    stock: stockStatus
+    stock: stockStatus,
+    availableStock: typeof rawStock === "number" ? rawStock : 5,
   };
+}
+
+/** 30-Second Wishlist Stock Polling function. Polls stock status for active wishlist items only. */
+export async function pollWishlistStockStatus(items: WishlistItem[]): Promise<WishlistItem[]> {
+  if (!items || items.length === 0) return items;
+
+  try {
+    const updatedItems = await Promise.all(
+      items.map(async (item) => {
+        try {
+          const product = await getProductById(item.id);
+          if (product) {
+            let stockStatus: StockStatus = item.stock;
+            if (product.availableStock !== undefined) {
+              if (product.availableStock <= 0) {
+                stockStatus = "out-of-stock";
+              } else if (product.availableStock === 1) {
+                stockStatus = "low-stock";
+              } else {
+                stockStatus = "in-stock";
+              }
+            }
+            return {
+              ...item,
+              stock: stockStatus,
+              availableStock: product.availableStock ?? item.availableStock ?? 5,
+            };
+          }
+        } catch {
+          // If product API call fails, retain current item state
+        }
+        return item;
+      })
+    );
+    saveLocalWishlist(updatedItems);
+    return updatedItems;
+  } catch {
+    return items;
+  }
 }
 
 // Products
