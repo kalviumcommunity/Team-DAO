@@ -99,8 +99,8 @@ export function ProductCard({ product, layout = "hero" }: ProductCardProps) {
       >
         <div className="relative h-full w-full overflow-hidden">
           <Image
-            src={product.image}
-            alt={product.imageAlt}
+            src={product.image || "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&q=80&w=600"}
+            alt={product.imageAlt || product.name || "Product image"}
             fill
             sizes="(max-width: 768px) 100vw, 33vw"
             className="object-contain mix-blend-multiply opacity-90 transition-transform duration-500 ease-out group-hover:scale-105"

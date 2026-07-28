@@ -27,7 +27,10 @@ export function ProductGallery({ images }: ProductGalleryProps) {
   });
   const parallaxY = useTransform(scrollYProgress, [0, 1], [-16, 16]);
 
-  const active = images[activeIndex];
+  const active = images[activeIndex] || images[0] || {
+    src: "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&q=80&w=600",
+    alt: "Product image",
+  };
 
   return (
     <div ref={containerRef} className="flex w-full flex-col gap-6 lg:w-[55%]">
@@ -38,8 +41,8 @@ export function ProductGallery({ images }: ProductGalleryProps) {
           animate={prefersReducedMotion ? undefined : floatLoop.animate}
         >
           <Image
-            src={active.src}
-            alt={active.alt}
+            src={active.src || "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&q=80&w=600"}
+            alt={active.alt || "Product image"}
             fill
             sizes="(max-width: 1024px) 100vw, 55vw"
             className="object-contain transition-transform duration-500 ease-out hover:scale-105"
@@ -51,7 +54,7 @@ export function ProductGallery({ images }: ProductGalleryProps) {
       <div className="grid w-full grid-cols-4 gap-4">
         {images.map((image, index) => (
           <button
-            key={image.src}
+            key={image.src || index}
             type="button"
             onClick={() => setActiveIndex(index)}
             className={cn(
@@ -62,7 +65,7 @@ export function ProductGallery({ images }: ProductGalleryProps) {
             )}
           >
             <div className="relative h-full w-full">
-              <Image src={image.src} alt={image.alt} fill sizes="120px" className="object-contain" />
+              <Image src={image.src || "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&q=80&w=600"} alt={image.alt || "Thumbnail image"} fill sizes="120px" className="object-contain" />
             </div>
           </button>
         ))}

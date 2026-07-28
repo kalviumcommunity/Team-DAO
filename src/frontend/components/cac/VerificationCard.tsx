@@ -25,8 +25,8 @@ export function VerificationCard({ listing }: { listing: VerificationListing }) 
       <div className="h-[140px] w-full shrink-0 overflow-hidden rounded-xl bg-surface-container md:w-[140px]">
         <div className="relative h-full w-full">
           <Image
-            src={listing.image}
-            alt={listing.imageAlt}
+            src={listing.image || "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&q=80&w=600"}
+            alt={listing.imageAlt || listing.name || "Verification image"}
             fill
             sizes="140px"
             className={cn("object-cover", isVerified && "grayscale-[20%]")}
@@ -60,7 +60,12 @@ export function VerificationCard({ listing }: { listing: VerificationListing }) 
         <div className="mt-auto flex items-center gap-2">
           <div className="h-6 w-6 overflow-hidden rounded-full bg-surface-dim">
             <div className="relative h-full w-full">
-              <Image src={listing.seller.avatar} alt={listing.seller.avatarAlt} fill className="object-cover" />
+              <Image
+                src={listing.seller?.avatar || "https://lh3.googleusercontent.com/aida-public/AB6AXuDCT97jlg9CTxIvpde6PllY3kmP6zNx3l_X8FNfYGLz-dv1fYo8S_7B-oVNOh3QvY4gyJwgW06rMJVAVxgnGF1Ha_q_uT_eCvtaTR68eeRIwqwRbM7PUECSXsL8Gz8EtzivEDg1KktJyfYdftsmL-1-ttvBts17KZKmHqemzN4SHOqmpXOAlEWRLKhtQu-PWnNNclFgyn3yOSaZowLRUPkJNaZLKSCdW6JwjiZdj1VyJVw6BVbj4hceqAQ2INWXxgQACakd7GYx6A5u"}
+                alt={listing.seller?.avatarAlt || listing.seller?.name || "Seller avatar"}
+                fill
+                className="object-cover"
+              />
             </div>
           </div>
           <span className="font-body-sm text-body-sm font-medium text-stone-charcoal">

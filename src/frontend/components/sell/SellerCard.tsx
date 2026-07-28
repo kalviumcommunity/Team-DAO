@@ -18,8 +18,8 @@ export function SellerCard({ seller }: SellerCardProps) {
       <div className="flex items-center gap-4">
         <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-full border border-silver-border bg-surface-container">
           <Image
-            src={seller.avatar}
-            alt={seller.avatarAlt}
+            src={seller.avatar || "https://lh3.googleusercontent.com/aida-public/AB6AXuDCT97jlg9CTxIvpde6PllY3kmP6zNx3l_X8FNfYGLz-dv1fYo8S_7B-oVNOh3QvY4gyJwgW06rMJVAVxgnGF1Ha_q_uT_eCvtaTR68eeRIwqwRbM7PUECSXsL8Gz8EtzivEDg1KktJyfYdftsmL-1-ttvBts17KZKmHqemzN4SHOqmpXOAlEWRLKhtQu-PWnNNclFgyn3yOSaZowLRUPkJNaZLKSCdW6JwjiZdj1VyJVw6BVbj4hceqAQ2INWXxgQACakd7GYx6A5u"}
+            alt={seller.avatarAlt || seller.name || "Seller avatar"}
             width={64}
             height={64}
             className="h-full w-full object-cover"
