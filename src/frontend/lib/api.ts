@@ -124,7 +124,7 @@ export async function getCartItems() {
 export async function addToCartItem(id: string, quantity = 1) {
   return apiRequest<unknown>('/api/cart', {
     method: 'POST',
-    body: JSON.stringify({ productId: id, quantity }),
+    body: JSON.stringify({ listingId: id, productId: id, quantity }),
   });
 }
 
@@ -150,7 +150,7 @@ export async function getWishlistItems() {
 export async function addToWishlistItem(id: string) {
   return apiRequest<unknown>('/api/wishlist', {
     method: 'POST',
-    body: JSON.stringify({ productId: id }),
+    body: JSON.stringify({ listingId: id, productId: id }),
   });
 }
 

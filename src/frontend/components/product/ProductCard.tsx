@@ -35,8 +35,8 @@ export function ProductCard({ product, layout = "hero" }: ProductCardProps) {
     try {
       await addToCartItem(product.id, 1);
       setFeedback("Added to cart");
-    } catch {
-      setFeedback("Could not add to cart");
+    } catch (err: unknown) {
+      setFeedback(err instanceof Error ? err.message : "Could not add to cart");
     }
   };
 
@@ -47,8 +47,8 @@ export function ProductCard({ product, layout = "hero" }: ProductCardProps) {
     try {
       await addToWishlistItem(product.id);
       setFeedback("Added to wishlist");
-    } catch {
-      setFeedback("Could not add to wishlist");
+    } catch (err: unknown) {
+      setFeedback(err instanceof Error ? err.message : "Could not add to wishlist");
     }
   };
 

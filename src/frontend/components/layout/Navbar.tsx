@@ -100,7 +100,7 @@ export function Navbar({ links = DEFAULT_LINKS, activeHref, minimal = false }: N
                 className="px-6 py-2 text-body-md"
                 onClick={() => router.push('/signup')}
               >
-                Join Now
+                Sign up
               </Button>
             </>
           )}
