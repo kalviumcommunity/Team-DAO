@@ -1,7 +1,7 @@
 const API_BASE_URL = typeof window !== "undefined" ? window.location.origin : "";
 import type { Product, CartItem, WishlistItem } from "@/types";
 
-function getAuthToken() {
+export function getAuthToken() {
   if (typeof window === "undefined") {
     return null;
   }

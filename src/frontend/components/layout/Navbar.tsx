@@ -2,11 +2,12 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, useMotionValueEvent, useScroll } from "framer-motion";
-import { Heart, UserCircle2 } from "lucide-react";
+import { Heart, UserCircle2, LogOut } from "lucide-react";
 import { Button } from "@/frontend/components/common/Button";
 import { cn } from "@/frontend/lib/cn";
+import { clearAuthToken, getAuthToken, getCurrentUser } from "@/frontend/lib/api";
 
 export interface NavLink {
   label: string;
@@ -27,6 +28,14 @@ interface NavbarProps {
   minimal?: boolean;
 }
 
+interface UserProfile {
+  id: string;
+  name: string;
+  email: string;
+  college?: string;
+  role?: string;
+}
+
 /**
  * Top navigation shared by every page. Starts transparent (so it sits over
  * hero imagery), gains a blurred background once the page scrolls, and
@@ -37,6 +46,41 @@ export function Navbar({ links = DEFAULT_LINKS, activeHref, minimal = false }: N
   const { scrollY } = useScroll();
   const [hidden, setHidden] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [user, setUser] = useState<UserProfile | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [menuOpen, setMenuOpen] = useState<boolean>(false);
+
+  useEffect(() => {
+    const checkAuth = () => {
+      const token = getAuthToken();
+      if (token) {
+        setIsAuthenticated(true);
+        getCurrentUser()
+          .then((res) => {
+            if (res?.user) {
+              setUser(res.user);
+            }
+          })
+          .catch(() => {
+            clearAuthToken();
+            setIsAuthenticated(false);
+            setUser(null);
+          });
+      } else {
+        setIsAuthenticated(false);
+        setUser(null);
+      }
+    };
+
+    checkAuth();
+    window.addEventListener("focus", checkAuth);
+    window.addEventListener("storage", checkAuth);
+
+    return () => {
+      window.removeEventListener("focus", checkAuth);
+      window.removeEventListener("storage", checkAuth);
+    };
+  }, []);
 
   useMotionValueEvent(scrollY, "change", (latest) => {
     const previous = scrollY.getPrevious() ?? 0;
@@ -89,19 +133,68 @@ export function Navbar({ links = DEFAULT_LINKS, activeHref, minimal = false }: N
               >
                 <Heart className="h-6 w-6" />
               </Link>
-              <Link
-                href="/login"
-                className="hidden font-subheading text-subheading text-primary transition-colors duration-200 hover:opacity-80 sm:block"
-              >
-                Sign in
-              </Link>
-              <Button 
-                variant="primary" 
-                className="px-6 py-2 text-body-md"
-                onClick={() => router.push('/signup')}
-              >
-                Sign up
-              </Button>
+              {isAuthenticated ? (
+                <div className="relative">
+                  <button
+                    type="button"
+                    onClick={() => setMenuOpen((prev) => !prev)}
+                    aria-label="User profile"
+                    className="flex items-center gap-2 rounded-full border border-silver-border bg-cream-paper p-1.5 text-on-surface shadow-xs transition-colors hover:border-primary hover:text-primary cursor-pointer"
+                  >
+                    <UserCircle2 className="h-7 w-7 text-primary" />
+                    {user?.name && (
+                      <span className="hidden text-sm font-medium md:inline-block max-w-[120px] truncate pr-1">
+                        {user.name}
+                      </span>
+                    )}
+                  </button>
+
+                  {menuOpen && (
+                    <div className="absolute right-0 mt-2 w-56 rounded-2xl border border-silver-border bg-cream-paper p-3 shadow-lg z-50">
+                      {user && (
+                        <div className="border-b border-silver-border pb-2 mb-2 px-2">
+                          <p className="font-subheading text-sm font-bold text-on-surface">{user.name}</p>
+                          <p className="font-body-sm text-xs text-sage-gray truncate">{user.email}</p>
+                          {user.college && (
+                            <p className="font-body-sm text-xs text-sage-gray/80 truncate">{user.college}</p>
+                          )}
+                        </div>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          clearAuthToken();
+                          setIsAuthenticated(false);
+                          setUser(null);
+                          setMenuOpen(false);
+                          router.push("/");
+                          router.refresh();
+                        }}
+                        className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-sm text-error transition-colors hover:bg-error-container/20 cursor-pointer"
+                      >
+                        <LogOut className="h-4 w-4" />
+                        Sign out
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <>
+                  <Link
+                    href="/login"
+                    className="hidden font-subheading text-subheading text-primary transition-colors duration-200 hover:opacity-80 sm:block"
+                  >
+                    Sign in
+                  </Link>
+                  <Button 
+                    variant="primary" 
+                    className="px-6 py-2 text-body-md"
+                    onClick={() => router.push('/signup')}
+                  >
+                    Sign up
+                  </Button>
+                </>
+              )}
             </>
           )}
           {minimal && <UserCircle2 className="h-7 w-7 text-on-surface" />}

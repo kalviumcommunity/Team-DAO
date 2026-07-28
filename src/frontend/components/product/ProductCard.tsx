@@ -8,7 +8,7 @@ import { Heart } from "lucide-react";
 import type { Product } from "@/types";
 import { Badge } from "@/frontend/components/common/Badge";
 import { Button } from "@/frontend/components/common/Button";
-import { addToCartItem, addToWishlistItem } from "@/frontend/lib/api";
+import { addToCartItem, addToWishlistItem, getAuthToken } from "@/frontend/lib/api";
 import { cardHover, usePrefersReducedMotion } from "@/frontend/lib/motion";
 
 interface ProductCardProps {
@@ -42,13 +42,24 @@ export function ProductCard({ product, layout = "hero" }: ProductCardProps) {
 
   const handleAddToWishlist = async (event: MouseEvent<HTMLButtonElement>) => {
     event.stopPropagation();
+
+    if (!getAuthToken()) {
+      setFeedback("Log in to see the wishlist");
+      return;
+    }
+
     setFeedback("Adding to wishlist...");
 
     try {
       await addToWishlistItem(product.id);
       setFeedback("Added to wishlist");
     } catch (err: unknown) {
-      setFeedback(err instanceof Error ? err.message : "Could not add to wishlist");
+      const msg = err instanceof Error ? err.message : "";
+      if (msg === "Unauthorized") {
+        setFeedback("Log in to see the wishlist");
+      } else {
+        setFeedback(msg || "Could not add to wishlist");
+      }
     }
   };
 
