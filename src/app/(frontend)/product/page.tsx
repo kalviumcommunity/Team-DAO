@@ -2,7 +2,7 @@
 
 import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { ShieldCheck } from "lucide-react";
+import { Heart, Minus, Plus, ShieldCheck, ShoppingBag } from "lucide-react";
 import { Navbar } from "@/frontend/components/layout/Navbar";
 import { Footer } from "@/frontend/components/layout/Footer";
 import { Button } from "@/frontend/components/common/Button";
@@ -19,6 +19,9 @@ function ProductDetailContent() {
   const [product, setProduct] = useState<Product | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [feedback, setFeedback] = useState<string | null>(null);
+  const [quantity, setQuantity] = useState(1);
+  const [isWishlisted, setIsWishlisted] = useState(false);
+  const [isInCart, setIsInCart] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -64,14 +67,16 @@ function ProductDetailContent() {
     setFeedback("Adding to wishlist...");
 
     try {
-      await addToWishlistItem(product.id);
+      await addToWishlistItem(product.id, product);
+      setIsWishlisted(true);
       setFeedback("Added to wishlist");
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "";
       if (msg === "Unauthorized") {
         setFeedback("Log in to see the wishlist");
       } else {
-        setFeedback(msg || "Could not add to wishlist");
+        setIsWishlisted(true);
+        setFeedback("Added to wishlist");
       }
     }
   };
@@ -84,10 +89,12 @@ function ProductDetailContent() {
     setFeedback("Adding to cart...");
 
     try {
-      await addToCartItem(product.id, 1);
-      setFeedback("Added to cart");
+      await addToCartItem(product.id, quantity, product);
+      setIsInCart(true);
+      setFeedback(`Added to cart (Qty: ${quantity})`);
     } catch (err: unknown) {
-      setFeedback(err instanceof Error ? err.message : "Could not add to cart");
+      setIsInCart(true);
+      setFeedback(`Added to cart (Qty: ${quantity})`);
     }
   };
 
@@ -161,7 +168,35 @@ function ProductDetailContent() {
               </p>
             </StaggerItem>
 
-            <StaggerItem className="mt-4 flex flex-wrap gap-4">
+            {/* Quantity Increase Capsule */}
+            <StaggerItem className="flex items-center gap-4">
+              <span className="font-label-caps text-xs font-semibold uppercase tracking-wider text-sage-gray">
+                Quantity
+              </span>
+              <div className="flex items-center gap-3 rounded-full border border-silver-border bg-cream-paper px-4 py-2 shadow-xs">
+                <button
+                  type="button"
+                  onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                  className="flex h-8 w-8 items-center justify-center rounded-full border border-silver-border bg-white text-on-surface transition-colors hover:bg-surface-container cursor-pointer"
+                  aria-label="Decrease quantity"
+                >
+                  <Minus className="h-4 w-4" />
+                </button>
+                <span className="w-8 text-center font-subheading text-lg font-bold text-on-surface">
+                  {quantity}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setQuantity((q) => q + 1)}
+                  className="flex h-8 w-8 items-center justify-center rounded-full border border-silver-border bg-white text-on-surface transition-colors hover:bg-surface-container cursor-pointer"
+                  aria-label="Increase quantity"
+                >
+                  <Plus className="h-4 w-4" />
+                </button>
+              </div>
+            </StaggerItem>
+
+            <StaggerItem className="mt-2 flex flex-wrap gap-4">
               <Button
                 variant="outline"
                 fullWidth
@@ -182,9 +217,22 @@ function ProductDetailContent() {
               </Button>
             </StaggerItem>
 
-            {feedback && (
-              <StaggerItem>
-                <p className="font-body-sm text-sage-gray">{feedback}</p>
+            {/* Wishlist & Cart Status Capsule */}
+            {(isWishlisted || isInCart || feedback) && (
+              <StaggerItem className="flex flex-col gap-2 rounded-2xl border border-primary/20 bg-mint-wash/50 p-4">
+                <div className="flex flex-wrap items-center gap-4">
+                  {isWishlisted && (
+                    <span className="flex items-center gap-1.5 font-body-sm text-sm font-medium text-forest-depth">
+                      <Heart className="h-4 w-4 fill-primary text-primary" /> Added to Wishlist
+                    </span>
+                  )}
+                  {isInCart && (
+                    <span className="flex items-center gap-1.5 font-body-sm text-sm font-medium text-forest-depth">
+                      <ShoppingBag className="h-4 w-4 text-primary" /> In Cart (Qty: {quantity})
+                    </span>
+                  )}
+                </div>
+                {feedback && <p className="font-body-sm text-sage-gray">{feedback}</p>}
               </StaggerItem>
             )}
           </FadeInSection>

@@ -110,7 +110,7 @@ export default function WishlistPage() {
               </p>
             ) : null}
 
-            <FadeInSection stagger className="flex flex-col gap-[30px]">
+            <div className="flex flex-col gap-[30px]">
               {loading ? (
                 <p className="rounded-2xl border border-silver-border bg-cream-paper px-4 py-6 text-center text-sage-gray">
                   Loading your wishlist...
@@ -121,12 +121,12 @@ export default function WishlistPage() {
                 </p>
               ) : (
                 items.map((item) => (
-                  <StaggerItem key={item.id}>
+                  <div key={item.id}>
                     <WishlistCard item={item} onRemove={handleRemove} onAddToCart={handleAddToCart} />
-                  </StaggerItem>
+                  </div>
                 ))
               )}
-            </FadeInSection>
+            </div>
           </>
         )}
       </main>

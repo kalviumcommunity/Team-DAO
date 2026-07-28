@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { motion, useMotionValueEvent, useScroll } from "framer-motion";
-import { Heart, UserCircle2, LogOut } from "lucide-react";
+import { Heart, UserCircle2, LogOut, ShoppingBag } from "lucide-react";
 import { Button } from "@/frontend/components/common/Button";
 import { cn } from "@/frontend/lib/cn";
 import { clearAuthToken, getAuthToken, getCurrentUser } from "@/frontend/lib/api";
@@ -132,6 +132,13 @@ export function Navbar({ links = DEFAULT_LINKS, activeHref, minimal = false }: N
                 className="hidden text-on-surface transition-transform duration-150 hover:scale-110 hover:text-primary sm:block"
               >
                 <Heart className="h-6 w-6" />
+              </Link>
+              <Link
+                href="/cart"
+                aria-label="Cart"
+                className="hidden text-on-surface transition-transform duration-150 hover:scale-110 hover:text-primary sm:block"
+              >
+                <ShoppingBag className="h-6 w-6" />
               </Link>
               {isAuthenticated ? (
                 <div className="relative">
