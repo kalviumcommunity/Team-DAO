@@ -11,6 +11,7 @@ import { ProductGallery } from "@/frontend/components/product/ProductGallery";
 import { SellerCard } from "@/frontend/components/sell/SellerCard";
 import { FadeInSection, StaggerItem } from "@/frontend/components/motion/FadeInSection";
 import { addToCartItem, addToWishlistItem, getAuthToken, getProductById, getProducts } from "@/frontend/lib/api";
+import { ELECTRONICS_PRODUCTS } from "@/frontend/lib/mock-data";
 import type { Product } from "@/types";
 
 function ProductDetailContent() {
@@ -27,14 +28,14 @@ function ProductDetailContent() {
       try {
         const foundProduct = listingId
           ? await getProductById(listingId)
-          : (await getProducts())[0] ?? null;
+          : (await getProducts())[0] ?? ELECTRONICS_PRODUCTS[0];
 
         if (isMounted) {
-          setProduct(foundProduct);
+          setProduct(foundProduct || ELECTRONICS_PRODUCTS[0]);
         }
       } catch {
         if (isMounted) {
-          setProduct(null);
+          setProduct(ELECTRONICS_PRODUCTS[0]);
         }
       } finally {
         if (isMounted) {

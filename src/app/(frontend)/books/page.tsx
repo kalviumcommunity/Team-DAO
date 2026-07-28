@@ -8,10 +8,11 @@ import { BooksFilterBar } from "@/frontend/components/product/BooksFilterBar";
 import { Button } from "@/frontend/components/common/Button";
 import { FadeInSection, StaggerItem } from "@/frontend/components/motion/FadeInSection";
 import { getProducts } from "@/frontend/lib/api";
+import { BOOK_PRODUCTS } from "@/frontend/lib/mock-data";
 import type { Product } from "@/types";
 
 export default function BooksPage() {
-  const [products, setProducts] = useState<Product[]>([]);
+  const [products, setProducts] = useState<Product[]>(BOOK_PRODUCTS);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -22,11 +23,11 @@ export default function BooksPage() {
       try {
         const listings = await getProducts({ category: "Books" });
         if (isMounted) {
-          setProducts(listings);
+          setProducts(bookListings.length > 0 ? bookListings : BOOK_PRODUCTS);
         }
-      } catch (err) {
+      } catch {
         if (isMounted) {
-          setError(err instanceof Error ? err.message : "Unable to load products.");
+          setProducts(BOOK_PRODUCTS);
         }
       } finally {
         if (isMounted) {

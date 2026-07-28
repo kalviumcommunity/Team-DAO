@@ -7,6 +7,8 @@ export interface Product {
   imageAlt: string;
   description?: string;
   condition?: string;
+  category?: string;
+  durationUsed?: string;
   trending?: boolean;
 }
 
