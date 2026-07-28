@@ -23,7 +23,7 @@ export default function BooksPage() {
       try {
         const listings = await getProducts({ category: "Books" });
         if (isMounted) {
-          setProducts(bookListings.length > 0 ? bookListings : BOOK_PRODUCTS);
+          setProducts(listings.length > 0 ? listings : BOOK_PRODUCTS);
         }
       } catch {
         if (isMounted) {
