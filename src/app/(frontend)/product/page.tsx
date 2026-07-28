@@ -10,7 +10,7 @@ import { Badge } from "@/frontend/components/common/Badge";
 import { ProductGallery } from "@/frontend/components/product/ProductGallery";
 import { SellerCard } from "@/frontend/components/sell/SellerCard";
 import { FadeInSection, StaggerItem } from "@/frontend/components/motion/FadeInSection";
-import { addToCartItem, addToWishlistItem, getProductById, getProducts } from "@/frontend/lib/api";
+import { addToCartItem, addToWishlistItem, getAuthToken, getProductById, getProducts } from "@/frontend/lib/api";
 import type { Product } from "@/types";
 
 function ProductDetailContent() {
@@ -55,13 +55,23 @@ function ProductDetailContent() {
       return;
     }
 
+    if (!getAuthToken()) {
+      setFeedback("Log in to see the wishlist");
+      return;
+    }
+
     setFeedback("Adding to wishlist...");
 
     try {
       await addToWishlistItem(product.id);
       setFeedback("Added to wishlist");
     } catch (err: unknown) {
-      setFeedback(err instanceof Error ? err.message : "Could not add to wishlist");
+      const msg = err instanceof Error ? err.message : "";
+      if (msg === "Unauthorized") {
+        setFeedback("Log in to see the wishlist");
+      } else {
+        setFeedback(msg || "Could not add to wishlist");
+      }
     }
   };
 
