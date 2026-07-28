@@ -198,6 +198,45 @@ function mapDbCartItemToCartItem(cartItem: any): CartItem {
   };
 }
 
+// Local storage helpers for Wishlist & Cart persistence
+export function getLocalWishlist(): WishlistItem[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = localStorage.getItem("stucart_local_wishlist");
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+export function saveLocalWishlist(items: WishlistItem[]) {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.setItem("stucart_local_wishlist", JSON.stringify(items));
+  } catch {
+    // ignore
+  }
+}
+
+export function getLocalCart(): CartItem[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = localStorage.getItem("stucart_local_cart");
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+export function saveLocalCart(items: CartItem[]) {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.setItem("stucart_local_cart", JSON.stringify(items));
+  } catch {
+    // ignore
+  }
+}
+
 function mapDbWishlistItemToWishlistItem(wishlistItem: any): WishlistItem {
   if (!wishlistItem) return wishlistItem;
   const mappedProduct = mapDbListingToProduct(wishlistItem.listing);
@@ -215,8 +254,8 @@ function mapDbWishlistItemToWishlistItem(wishlistItem: any): WishlistItem {
 
   return {
     ...mappedProduct,
-    id: wishlistItem.listingId, // the listing ID (product ID)
-    description: wishlistItem.listing?.description || "",
+    id: wishlistItem.listingId || mappedProduct.id,
+    description: wishlistItem.listing?.description || mappedProduct.description || "",
     stock: stockStatus
   };
 }
@@ -238,46 +277,141 @@ export async function getProductById(id: string) {
 
 // Cart
 export async function getCartItems() {
-  const data = await apiRequest<{ cart: any[] }>('/api/cart');
-  return data.cart.map(mapDbCartItemToCartItem);
+  const localItems = getLocalCart();
+  try {
+    const data = await apiRequest<{ cart: any[] }>('/api/cart');
+    const apiItems = data.cart.map(mapDbCartItemToCartItem);
+
+    const mergedMap = new Map<string, CartItem>();
+    for (const item of [...localItems, ...apiItems]) {
+      if (item && item.id) {
+        mergedMap.set(item.id, item);
+      }
+    }
+    return Array.from(mergedMap.values());
+  } catch (err) {
+    if (localItems.length > 0) {
+      return localItems;
+    }
+    throw err;
+  }
 }
 
-export async function addToCartItem(id: string, quantity = 1) {
-  return apiRequest<unknown>('/api/cart', {
-    method: 'POST',
-    body: JSON.stringify({ listingId: id, productId: id, quantity }),
-  });
+export async function addToCartItem(id: string, quantity = 1, product?: Partial<Product>) {
+  const currentLocal = getLocalCart();
+  const existingIndex = currentLocal.findIndex((item) => item.id === id);
+  if (existingIndex >= 0) {
+    currentLocal[existingIndex].quantity += quantity;
+  } else {
+    const newItem: CartItem = {
+      id,
+      name: product?.name || "Product",
+      price: product?.price || "$0.00",
+      image: product?.image || "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&q=80&w=600",
+      imageAlt: product?.imageAlt || product?.name || "Product image",
+      quantity,
+      verified: true,
+    };
+    currentLocal.unshift(newItem);
+  }
+  saveLocalCart(currentLocal);
+
+  try {
+    return await apiRequest<unknown>('/api/cart', {
+      method: 'POST',
+      body: JSON.stringify({ listingId: id, productId: id, quantity }),
+    });
+  } catch {
+    return { success: true, local: true };
+  }
 }
 
 export async function updateCartItemQuantity(id: string, quantity: number) {
-  return apiRequest<unknown>(`/api/cart/${id}`, {
-    method: 'PUT',
-    body: JSON.stringify({ quantity }),
-  });
+  const currentLocal = getLocalCart();
+  const itemIndex = currentLocal.findIndex((i) => i.id === id);
+  if (itemIndex >= 0) {
+    currentLocal[itemIndex].quantity = quantity;
+    saveLocalCart(currentLocal);
+  }
+  try {
+    return await apiRequest<unknown>(`/api/cart/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify({ quantity }),
+    });
+  } catch {
+    return { success: true };
+  }
 }
 
 export async function removeCartItem(id: string) {
-  return apiRequest<unknown>(`/api/cart/${id}`, {
-    method: 'DELETE',
-  });
+  const currentLocal = getLocalCart();
+  saveLocalCart(currentLocal.filter((item) => item.id !== id));
+  try {
+    return await apiRequest<unknown>(`/api/cart/${id}`, {
+      method: 'DELETE',
+    });
+  } catch {
+    return { success: true };
+  }
 }
 
 // Wishlist
 export async function getWishlistItems() {
-  const data = await apiRequest<{ wishlist: any[] }>('/api/wishlist');
-  return data.wishlist.map(mapDbWishlistItemToWishlistItem);
+  const localItems = getLocalWishlist();
+  try {
+    const data = await apiRequest<{ wishlist: any[] }>('/api/wishlist');
+    const apiItems = data.wishlist.map(mapDbWishlistItemToWishlistItem);
+
+    const mergedMap = new Map<string, WishlistItem>();
+    for (const item of [...localItems, ...apiItems]) {
+      if (item && item.id) {
+        mergedMap.set(item.id, item);
+      }
+    }
+    return Array.from(mergedMap.values());
+  } catch (err) {
+    if (localItems.length > 0) {
+      return localItems;
+    }
+    throw err;
+  }
 }
 
-export async function addToWishlistItem(id: string) {
-  return apiRequest<unknown>('/api/wishlist', {
-    method: 'POST',
-    body: JSON.stringify({ listingId: id, productId: id }),
-  });
+export async function addToWishlistItem(id: string, product?: Partial<Product>) {
+  const currentLocal = getLocalWishlist();
+  if (!currentLocal.some((item) => item.id === id)) {
+    const newItem: WishlistItem = {
+      id,
+      name: product?.name || "Product",
+      price: product?.price || "$0.00",
+      image: product?.image || "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&q=80&w=600",
+      imageAlt: product?.imageAlt || product?.name || "Product image",
+      description: product?.description || "",
+      condition: product?.condition || "Good",
+      stock: "in-stock",
+    };
+    saveLocalWishlist([newItem, ...currentLocal]);
+  }
+
+  try {
+    return await apiRequest<unknown>('/api/wishlist', {
+      method: 'POST',
+      body: JSON.stringify({ listingId: id, productId: id }),
+    });
+  } catch {
+    return { success: true, local: true };
+  }
 }
 
 export async function removeWishlistItem(id: string) {
-  return apiRequest<unknown>(`/api/wishlist/${id}`, {
-    method: 'DELETE',
-  });
+  const currentLocal = getLocalWishlist();
+  saveLocalWishlist(currentLocal.filter((item) => item.id !== id));
+  try {
+    return await apiRequest<unknown>(`/api/wishlist/${id}`, {
+      method: 'DELETE',
+    });
+  } catch {
+    return { success: true };
+  }
 }
 

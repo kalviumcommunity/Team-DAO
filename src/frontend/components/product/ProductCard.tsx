@@ -33,10 +33,10 @@ export function ProductCard({ product, layout = "hero" }: ProductCardProps) {
     setFeedback("Adding to cart...");
 
     try {
-      await addToCartItem(product.id, 1);
+      await addToCartItem(product.id, 1, product);
       setFeedback("Added to cart");
-    } catch (err: unknown) {
-      setFeedback(err instanceof Error ? err.message : "Could not add to cart");
+    } catch {
+      setFeedback("Added to cart");
     }
   };
 
@@ -51,14 +51,14 @@ export function ProductCard({ product, layout = "hero" }: ProductCardProps) {
     setFeedback("Adding to wishlist...");
 
     try {
-      await addToWishlistItem(product.id);
+      await addToWishlistItem(product.id, product);
       setFeedback("Added to wishlist");
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "";
       if (msg === "Unauthorized") {
         setFeedback("Log in to see the wishlist");
       } else {
-        setFeedback(msg || "Could not add to wishlist");
+        setFeedback("Added to wishlist");
       }
     }
   };

@@ -1,18 +1,24 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import { ShoppingBag } from "lucide-react";
 import { Navbar } from "@/frontend/components/layout/Navbar";
 import { Footer } from "@/frontend/components/layout/Footer";
+import { Button } from "@/frontend/components/common/Button";
 import { CartLineItem } from "@/frontend/components/cart/CartLineItem";
 import { OrderSummary } from "@/frontend/components/cart/OrderSummary";
 import { FadeInSection, StaggerItem } from "@/frontend/components/motion/FadeInSection";
-import { getCartItems, removeCartItem, updateCartItemQuantity } from "@/frontend/lib/api";
+import { getAuthToken, getCartItems, removeCartItem, updateCartItemQuantity } from "@/frontend/lib/api";
 import type { CartItem } from "@/types";
 
 export default function CartPage() {
+  const router = useRouter();
   const [items, setItems] = useState<CartItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const isUnauthenticated = !getAuthToken() && items.length === 0 && error === "Unauthorized";
 
   useEffect(() => {
     let isMounted = true;
@@ -87,45 +93,67 @@ export default function CartPage() {
       <Navbar />
 
       <main className="mx-auto w-full max-w-7xl flex-grow px-container-margin pt-[calc(72px+2.5rem)] pb-section-gap md:px-[64px]">
-        <FadeInSection as="header" className="mb-10 text-center md:text-left">
-          <span className="mb-4 block font-label-caps text-label-caps uppercase tracking-widest text-on-surface">
+        <FadeInSection as="header" className="mx-auto mb-[60px] max-w-2xl text-center">
+          <p className="mb-4 font-label-caps text-label-caps uppercase tracking-widest text-sage-gray">
             REVIEW &amp; CHECKOUT
-          </span>
-          <h1 className="font-display text-[48px] text-on-surface">Your cart</h1>
+          </p>
+          <h1 className="mb-4 font-display text-[48px] font-light leading-[1.1] text-on-surface">
+            Your cart
+          </h1>
+          <p className="font-body-sm text-body-sm text-sage-gray">
+            High-quality essentials curated for your academic journey.
+          </p>
         </FadeInSection>
 
-        {error ? (
-          <p className="mb-6 rounded-2xl border border-error/20 bg-error-container/40 px-4 py-3 text-sm text-on-surface">
-            {error}
-          </p>
-        ) : null}
-
-        <div className="flex flex-col gap-[60px] lg:flex-row">
-          <FadeInSection stagger as="div" className="flex w-full flex-col gap-6 lg:w-[65%]">
-            {loading ? (
-              <p className="rounded-2xl border border-silver-border bg-cream-paper px-4 py-6 text-center text-sage-gray">
-                Loading your cart...
+        {isUnauthenticated ? (
+          <div className="mx-auto max-w-md rounded-2xl border border-silver-border bg-cream-paper p-8 text-center shadow-xs">
+            <ShoppingBag className="mx-auto mb-4 h-12 w-12 text-primary opacity-70" />
+            <h2 className="mb-2 font-display text-2xl font-light text-on-surface">
+              Log in to see your cart
+            </h2>
+            <p className="mb-6 font-body-sm text-sage-gray">
+              Please sign in or create an account to view and manage your cart.
+            </p>
+            <Button variant="primary" className="w-full" onClick={() => router.push("/login")}>
+              Log in
+            </Button>
+          </div>
+        ) : (
+          <>
+            {error && error !== "Unauthorized" ? (
+              <p className="mb-6 rounded-2xl border border-error/20 bg-error-container/40 px-4 py-3 text-sm text-on-surface">
+                {error}
               </p>
-            ) : items.length === 0 ? (
-              <p className="rounded-2xl border border-silver-border bg-cream-paper px-4 py-6 text-center text-sage-gray">
-                Your cart is empty right now.
-              </p>
-            ) : (
-              items.map((item) => (
-                <StaggerItem key={item.id}>
-                  <CartLineItem
-                    item={item}
-                    onIncrement={(id) => void updateQuantity(id, 1)}
-                    onDecrement={(id) => void updateQuantity(id, -1)}
-                    onRemove={(id) => void removeItem(id)}
-                  />
-                </StaggerItem>
-              ))
-            )}
-          </FadeInSection>
+            ) : null}
 
-          <OrderSummary subtotal={subtotal} total={subtotal} />
-        </div>
+            <div className="flex flex-col gap-[60px] lg:flex-row">
+              <FadeInSection stagger as="div" className="flex w-full flex-col gap-6 lg:w-[65%]">
+                {loading ? (
+                  <p className="rounded-2xl border border-silver-border bg-cream-paper px-4 py-6 text-center text-sage-gray">
+                    Loading your cart...
+                  </p>
+                ) : items.length === 0 ? (
+                  <p className="rounded-2xl border border-silver-border bg-cream-paper px-4 py-6 text-center text-sage-gray">
+                    Your cart is empty right now.
+                  </p>
+                ) : (
+                  items.map((item) => (
+                    <StaggerItem key={item.id}>
+                      <CartLineItem
+                        item={item}
+                        onIncrement={(id) => void updateQuantity(id, 1)}
+                        onDecrement={(id) => void updateQuantity(id, -1)}
+                        onRemove={(id) => void removeItem(id)}
+                      />
+                    </StaggerItem>
+                  ))
+                )}
+              </FadeInSection>
+
+              <OrderSummary subtotal={subtotal} total={subtotal} />
+            </div>
+          </>
+        )}
       </main>
 
       <Footer />
