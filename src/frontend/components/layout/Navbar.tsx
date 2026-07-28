@@ -16,7 +16,7 @@ export interface NavLink {
 
 const DEFAULT_LINKS: NavLink[] = [
   { label: "Books", href: "/books" },
-  { label: "Electronics", href: "/product" },
+  { label: "Electronics", href: "/electronics" },
   { label: "Stationery", href: "/stationery" },
   { label: "Sell", href: "/sell" },
 ];

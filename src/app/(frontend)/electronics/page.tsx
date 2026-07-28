@@ -4,15 +4,13 @@ import { useEffect, useState } from "react";
 import { Navbar } from "@/frontend/components/layout/Navbar";
 import { Footer } from "@/frontend/components/layout/Footer";
 import { ProductCard } from "@/frontend/components/product/ProductCard";
-import { BooksFilterBar } from "@/frontend/components/product/BooksFilterBar";
 import { Button } from "@/frontend/components/common/Button";
 import { FadeInSection, StaggerItem } from "@/frontend/components/motion/FadeInSection";
 import { getProducts } from "@/frontend/lib/api";
-import { BOOK_PRODUCTS } from "@/frontend/lib/mock-data";
 import type { Product } from "@/types";
 
-export default function BooksPage() {
-  const [products, setProducts] = useState<Product[]>(BOOK_PRODUCTS);
+export default function ElectronicsPage() {
+  const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -21,13 +19,13 @@ export default function BooksPage() {
 
     async function loadProducts() {
       try {
-        const listings = await getProducts({ category: "Books" });
+        const listings = await getProducts({ category: "Electronics" });
         if (isMounted) {
-          setProducts(bookListings.length > 0 ? bookListings : BOOK_PRODUCTS);
+          setProducts(listings);
         }
-      } catch {
+      } catch (err) {
         if (isMounted) {
-          setProducts(BOOK_PRODUCTS);
+          setError(err instanceof Error ? err.message : "Unable to load products.");
         }
       } finally {
         if (isMounted) {
@@ -45,7 +43,7 @@ export default function BooksPage() {
 
   return (
     <>
-      <Navbar activeHref="/books" />
+      <Navbar activeHref="/electronics" />
 
       <main className="mx-auto w-full max-w-7xl flex-grow px-container-margin pb-section-gap pt-[calc(72px+3rem)]">
         <FadeInSection
@@ -57,15 +55,13 @@ export default function BooksPage() {
           </span>
           <div className="flex flex-col gap-4 md:flex-row md:items-end md:gap-6">
             <h1 className="font-display text-[48px] font-light leading-tight tracking-[-1px] text-stone-charcoal">
-              Books
+              Electronics
             </h1>
             <span className="pb-2 font-body-sm text-body-sm text-sage-gray">
               {products.length} items
             </span>
           </div>
         </FadeInSection>
-
-        <BooksFilterBar />
 
         {isLoading ? (
           <p className="mb-16 text-center text-sage-gray">Loading products...</p>
@@ -76,9 +72,9 @@ export default function BooksPage() {
             stagger
             className="mb-16 grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3"
           >
-            {products.map((book) => (
-              <StaggerItem key={book.id}>
-                <ProductCard product={book} layout="compact" />
+            {products.map((electronic) => (
+              <StaggerItem key={electronic.id}>
+                <ProductCard product={electronic} layout="compact" />
               </StaggerItem>
             ))}
           </FadeInSection>
