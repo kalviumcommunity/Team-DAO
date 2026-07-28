@@ -40,8 +40,8 @@ export function WishlistCard({ item, onRemove, onAddToCart }: WishlistCardProps)
       <div className="flex h-48 w-full flex-shrink-0 items-center justify-center rounded-xl bg-surface-container-lowest p-4 md:w-48">
         <div className="relative h-full w-full">
           <Image
-            src={item.image}
-            alt={item.imageAlt}
+            src={item.image || "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&q=80&w=600"}
+            alt={item.imageAlt || item.name || "Wishlist item image"}
             fill
             sizes="192px"
             className={cn(

@@ -110,6 +110,8 @@ export function PageTransition({ children, className }: { children: ReactNode; c
 
 export function MotionImage(props: ComponentPropsWithoutRef<typeof motion.img>) {
   const prefersReducedMotion = usePrefersReducedMotion();
+  const altText = props.alt || "Image";
+  const srcUrl = typeof props.src === "string" ? props.src : (props.src as unknown as string) || "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&q=80&w=600";
 
   if (prefersReducedMotion) {
     const safeProps = { ...props } as Record<string, unknown>;
@@ -120,9 +122,9 @@ export function MotionImage(props: ComponentPropsWithoutRef<typeof motion.img>) 
     delete safeProps.exit;
     delete safeProps.variants;
     delete safeProps.transition;
-    // eslint-disable-next-line @next/next/no-img-element, jsx-a11y/alt-text
-    return <img {...(safeProps as React.ComponentPropsWithoutRef<"img">)} />;
+    // eslint-disable-next-line @next/next/no-img-element
+    return <img alt={altText} {...(safeProps as React.ComponentPropsWithoutRef<"img">)} src={srcUrl} />;
   }
 
-  return <motion.img {...props} />;
+  return <motion.img alt={altText} {...props} src={srcUrl} />;
 }

@@ -28,8 +28,8 @@ export function CartLineItem({ item, onIncrement, onDecrement, onRemove }: CartL
       <div className="flex h-24 w-24 flex-shrink-0 items-center justify-center overflow-hidden rounded-lg bg-mint-wash">
         <div className="relative h-full w-full">
           <Image
-            src={item.image}
-            alt={item.imageAlt}
+            src={item.image || "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&q=80&w=600"}
+            alt={item.imageAlt || item.name || "Cart item image"}
             fill
             sizes="96px"
             className="object-cover mix-blend-multiply"
