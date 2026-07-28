@@ -92,6 +92,7 @@ export const ELECTRONICS_PRODUCTS: Product[] = [
     description: "Industry-leading active noise cancelling wireless headphones with 30-hour battery life and multi-point Bluetooth pairing.",
     durationUsed: "4 months",
     trending: true,
+    availableStock: 0,
     image:
       "https://lh3.googleusercontent.com/aida-public/AB6AXuA-8cwkHNo6ztAJvftk7herVBCKReDlEgJEl2O-tCHvf5opZOphsgibIISHnAqrLp-njlx6OFWHdc_bPY06UmVpkuaAgtzQTpHg4o2qaqkpkRPaO1pP9he48XUn8YVnU4mSNwJCobqOLqEy871SL6y57q_Ced0cafp2fAIAmCshqhc8XjZoq6IjW1_GACxAawQvRJ80SfX35qmnXAFFgFtID8RfVbm0ZGDb3DddRhn2Cwx8L3PAmPv3cm8K0Lj9PyFtXq4WG8Rxxs2J",
     imageAlt: "Black Sony WH-1000XM4 noise-cancelling headphones on a white background",
