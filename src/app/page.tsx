@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import { Navbar } from "@/frontend/components/layout/Navbar";
@@ -14,6 +15,7 @@ import { TRENDING_PRODUCTS } from "@/frontend/lib/mock-data";
 import type { Product } from "@/types";
 
 export default function HomePage() {
+  const router = useRouter();
   const prefersReducedMotion = usePrefersReducedMotion();
   const [products, setProducts] = useState<Product[]>(TRENDING_PRODUCTS);
   const [isLoading, setIsLoading] = useState(true);
@@ -44,6 +46,14 @@ export default function HomePage() {
       isMounted = false;
     };
   }, []);
+
+  const handleShopNow = () => {
+    router.push("/");
+    const el = document.getElementById("featured-products");
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth" });
+    }
+  };
 
   return (
     <>
@@ -80,17 +90,28 @@ export default function HomePage() {
             variants={heroItem}
             className="flex w-full flex-col items-center justify-center gap-4 sm:w-auto sm:flex-row"
           >
-            <Button variant="primary" fullWidth className="sm:w-auto" icon={<ArrowRight className="h-4 w-4" />}>
+            <Button
+              variant="primary"
+              fullWidth
+              className="sm:w-auto"
+              icon={<ArrowRight className="h-4 w-4" />}
+              onClick={handleShopNow}
+            >
               Shop now
             </Button>
-            <Button variant="dark" fullWidth className="sm:w-auto">
+            <Button
+              variant="dark"
+              fullWidth
+              className="sm:w-auto"
+              onClick={() => router.push("/sell")}
+            >
               Sell an item
             </Button>
           </motion.div>
         </motion.section>
 
         {/* Product grid */}
-        <section className="mx-auto max-w-7xl px-container-margin py-section-gap">
+        <section id="featured-products" className="mx-auto max-w-7xl px-container-margin py-section-gap">
           <FadeInSection className="mb-[80px] text-center">
             <span className="mb-4 block font-label-caps text-label-caps uppercase tracking-widest text-on-surface">
               THIS WEEK

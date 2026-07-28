@@ -27,7 +27,8 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    const { listingId, quantity } = body;
+    const listingId = body.listingId || body.productId;
+    const quantity = body.quantity;
 
     if (!listingId) {
       return NextResponse.json({ error: "listingId is required" }, { status: 400 });
