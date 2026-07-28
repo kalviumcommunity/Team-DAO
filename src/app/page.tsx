@@ -48,11 +48,7 @@ export default function HomePage() {
   }, []);
 
   const handleShopNow = () => {
-    router.push("/");
-    const el = document.getElementById("featured-products");
-    if (el) {
-      el.scrollIntoView({ behavior: "smooth" });
-    }
+    router.push("/product");
   };
 
   return (
