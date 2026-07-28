@@ -55,7 +55,8 @@ export default function CartPage() {
       return;
     }
 
-    const nextQuantity = Math.max(1, currentItem.quantity + delta);
+    const availableStock = currentItem.availableStock ?? 5;
+    const nextQuantity = Math.min(availableStock, Math.max(1, currentItem.quantity + delta));
 
     try {
       await updateCartItemQuantity(id, nextQuantity);

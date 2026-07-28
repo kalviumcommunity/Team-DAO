@@ -1,15 +1,16 @@
 "use client";
 
-import { useState, type MouseEvent } from "react";
+import { useEffect, useState, type MouseEvent } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { Heart } from "lucide-react";
+import { Check, Heart } from "lucide-react";
 import type { Product } from "@/types";
 import { Badge } from "@/frontend/components/common/Badge";
 import { Button } from "@/frontend/components/common/Button";
-import { addToCartItem, addToWishlistItem, getAuthToken } from "@/frontend/lib/api";
+import { addToCartItem, addToWishlistItem, getAuthToken, getLocalCart, getLocalWishlist } from "@/frontend/lib/api";
 import { cardHover, usePrefersReducedMotion } from "@/frontend/lib/motion";
+import { cn } from "@/frontend/lib/cn";
 
 interface ProductCardProps {
   product: Product;
@@ -24,18 +25,42 @@ export function ProductCard({ product, layout = "hero" }: ProductCardProps) {
   const isHero = layout === "hero";
   const [feedback, setFeedback] = useState<string | null>(null);
 
+  const [isInCart, setIsInCart] = useState<boolean>(false);
+  const [isWishlisted, setIsWishlisted] = useState<boolean>(false);
+
+  const isOutOfStock =
+    product.availableStock === 0 ||
+    (product as any).stock === "out-of-stock" ||
+    (product as any).stock === 0;
+
+  useEffect(() => {
+    const cart = getLocalCart();
+    setIsInCart(cart.some((i) => i.id === product.id || i.name === product.name));
+    const wishlist = getLocalWishlist();
+    setIsWishlisted(wishlist.some((i) => i.id === product.id || i.name === product.name));
+  }, [product.id, product.name]);
+
   const handleOpenDetail = () => {
     router.push(`/product?id=${product.id}`);
   };
 
   const handleAddToCart = async (event: MouseEvent<HTMLButtonElement>) => {
     event.stopPropagation();
+    if (isOutOfStock) return;
+
+    if (isInCart) {
+      router.push("/cart");
+      return;
+    }
+
     setFeedback("Adding to cart...");
 
     try {
       await addToCartItem(product.id, 1, product);
+      setIsInCart(true);
       setFeedback("Added to cart");
     } catch {
+      setIsInCart(true);
       setFeedback("Added to cart");
     }
   };
@@ -52,12 +77,14 @@ export function ProductCard({ product, layout = "hero" }: ProductCardProps) {
 
     try {
       await addToWishlistItem(product.id, product);
+      setIsWishlisted(true);
       setFeedback("Added to wishlist");
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "";
       if (msg === "Unauthorized") {
         setFeedback("Log in to see the wishlist");
       } else {
+        setIsWishlisted(true);
         setFeedback("Added to wishlist");
       }
     }
@@ -84,11 +111,15 @@ export function ProductCard({ product, layout = "hero" }: ProductCardProps) {
           : "group relative flex cursor-pointer flex-col overflow-hidden rounded-[24px] border border-transparent bg-cream-paper p-card-padding shadow-ambient transition-colors duration-300 hover:border-silver-border"
       }
     >
-      {product.trending && (
+      {isOutOfStock ? (
+        <div className="absolute left-card-padding top-card-padding z-10">
+          <Badge variant="dark">Sold Out</Badge>
+        </div>
+      ) : product.trending ? (
         <div className="absolute left-card-padding top-card-padding z-10">
           <Badge variant="lime">Trending</Badge>
         </div>
-      )}
+      ) : null}
 
       <div
         className={
@@ -103,7 +134,10 @@ export function ProductCard({ product, layout = "hero" }: ProductCardProps) {
             alt={product.imageAlt || product.name || "Product image"}
             fill
             sizes="(max-width: 768px) 100vw, 33vw"
-            className="object-contain mix-blend-multiply opacity-90 transition-transform duration-500 ease-out group-hover:scale-105"
+            className={cn(
+              "object-contain mix-blend-multiply opacity-90 transition-transform duration-500 ease-out group-hover:scale-105",
+              isOutOfStock && "grayscale opacity-50"
+            )}
           />
         </div>
       </div>
@@ -132,14 +166,35 @@ export function ProductCard({ product, layout = "hero" }: ProductCardProps) {
             )}
           </p>
           <div className="mt-auto flex gap-3">
-            <Button
-              variant="primary"
-              type="button"
-              onClick={handleAddToCart}
-              className="flex-1 px-0 py-2.5 text-[14px]"
-            >
-              Add
-            </Button>
+            {isOutOfStock ? (
+              <Button
+                variant="outline"
+                type="button"
+                disabled
+                className="flex-1 cursor-not-allowed bg-warm-mist px-0 py-2.5 text-[14px] text-sage-gray"
+              >
+                Sold Out
+              </Button>
+            ) : isInCart ? (
+              <Button
+                variant="primary"
+                type="button"
+                onClick={handleAddToCart}
+                className="flex flex-1 items-center justify-center gap-1 bg-forest-depth px-0 py-2.5 text-[14px] text-white hover:bg-forest-depth/90"
+              >
+                <Check className="h-4 w-4" /> In Cart
+              </Button>
+            ) : (
+              <Button
+                variant="primary"
+                type="button"
+                onClick={handleAddToCart}
+                className="flex-1 px-0 py-2.5 text-[14px]"
+              >
+                Add
+              </Button>
+            )}
+
             <Button
               variant="outline"
               type="button"
@@ -147,7 +202,7 @@ export function ProductCard({ product, layout = "hero" }: ProductCardProps) {
               className="h-10 w-10 rounded-full !p-0"
               aria-label={`Add ${product.name} to wishlist`}
             >
-              <Heart className="h-5 w-5" />
+              <Heart className={cn("h-5 w-5", isWishlisted && "fill-primary text-primary")} />
             </Button>
           </div>
           {feedback && <p className="mt-3 text-[12px] text-sage-gray">{feedback}</p>}
