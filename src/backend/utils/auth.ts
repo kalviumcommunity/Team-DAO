@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import jwt from "jsonwebtoken";
 import { UserRepository } from "../repositories/user.repository";
+import { UserRole } from "@prisma/client";
 
 export const JWT_SECRET = process.env.JWT_SECRET || "fallback-secret-key-change-me";
 
@@ -13,7 +14,8 @@ export interface AuthenticatedUser {
   name: string;
   email: string;
   college: string;
-  role: "STUDENT" | "VERIFIER" | "ADMIN";
+  role: UserRole;
+  isSuspended: boolean;
 }
 
 export async function getCurrentUser(req: Request | NextRequest): Promise<AuthenticatedUser | null> {
@@ -48,7 +50,7 @@ export async function getCurrentUser(req: Request | NextRequest): Promise<Authen
     };
 
     const user = await UserRepository.findById(decoded.userId);
-    if (!user) {
+    if (!user || user.isSuspended) {
       return null;
     }
 
@@ -57,7 +59,8 @@ export async function getCurrentUser(req: Request | NextRequest): Promise<Authen
       name: user.name,
       email: user.email,
       college: user.college,
-      role: user.role as "STUDENT" | "VERIFIER" | "ADMIN",
+      role: user.role,
+      isSuspended: user.isSuspended,
     };
   } catch {
     return null;

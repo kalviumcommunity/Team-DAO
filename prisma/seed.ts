@@ -21,6 +21,10 @@ async function main() {
 
   console.log("Cleaning database...");
   // Delete references first to avoid foreign key constraint violations
+  await prisma.auditLog.deleteMany({});
+  await prisma.inventoryLog.deleteMany({});
+  await prisma.orderItem.deleteMany({});
+  await prisma.order.deleteMany({});
   await prisma.verification.deleteMany({});
   await prisma.exchangeRequest.deleteMany({});
   await prisma.cartItem.deleteMany({});
@@ -32,6 +36,16 @@ async function main() {
   const hashedPassword = await bcrypt.hash("password123", 10);
 
   console.log("Seeding users...");
+  const superAdmin = await prisma.user.create({
+    data: {
+      name: "Super Admin",
+      email: "superadmin@college.edu",
+      password: hashedPassword,
+      college: "Central University",
+      role: "SUPER_ADMIN",
+    },
+  });
+
   const admin = await prisma.user.create({
     data: {
       name: "Admin User",
@@ -299,6 +313,78 @@ async function main() {
         verifierId: verifier2.id,
         status: "PENDING",
         remarks: "Waiting for student to present item for verification.",
+      },
+    ],
+  });
+
+  console.log("Seeding orders & items...");
+  const order1 = await prisma.order.create({
+    data: {
+      userId: student1.id,
+      totalAmount: 110.00,
+      status: "DELIVERED",
+      items: {
+        create: [
+          { listingId: listing1.id, quantity: 1, price: 45.00 },
+          { listingId: listing2.id, quantity: 1, price: 65.00 },
+        ],
+      },
+    },
+  });
+
+  const order2 = await prisma.order.create({
+    data: {
+      userId: student2.id,
+      totalAmount: 750.00,
+      status: "PROCESSING",
+      items: {
+        create: [
+          { listingId: listing3.id, quantity: 1, price: 750.00 },
+        ],
+      },
+    },
+  });
+
+  console.log("Seeding inventory logs & audit logs...");
+  await prisma.inventoryLog.createMany({
+    data: [
+      {
+        listingId: listing1.id,
+        previousStock: 5,
+        newStock: 3,
+        updatedById: admin.id,
+      },
+      {
+        listingId: listing3.id,
+        previousStock: 2,
+        newStock: 1,
+        updatedById: admin.id,
+      },
+    ],
+  });
+
+  await prisma.auditLog.createMany({
+    data: [
+      {
+        adminId: superAdmin.id,
+        action: "PROMOTED_USER_TO_ADMIN",
+        targetType: "User",
+        targetId: admin.id,
+        details: "Promoted Admin User to ADMIN role",
+      },
+      {
+        adminId: admin.id,
+        action: "UPDATED_STOCK",
+        targetType: "Listing",
+        targetId: listing1.id,
+        details: "Updated stock from 5 to 3",
+      },
+      {
+        adminId: admin.id,
+        action: "UPDATED_ORDER_STATUS",
+        targetType: "Order",
+        targetId: order1.id,
+        details: "Updated status to DELIVERED",
       },
     ],
   });

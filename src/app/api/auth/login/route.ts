@@ -14,7 +14,16 @@ export async function POST(req: Request) {
     }
 
     const result = await AuthService.login({ email, password });
-    return NextResponse.json(result, { status: 200 });
+    const response = NextResponse.json(result, { status: 200 });
+
+    // Set cookie for browser session handling
+    response.cookies.set("token", result.token, {
+      httpOnly: false,
+      path: "/",
+      maxAge: 7 * 24 * 60 * 60,
+    });
+
+    return response;
   } catch (error: unknown) {
     return NextResponse.json(
       { error: (error instanceof Error ? error.message : String(error)) || "Invalid credentials" },

@@ -11,6 +11,7 @@ enum UserRole {
   STUDENT
   VERIFIER
   ADMIN
+  SUPER_ADMIN
 }
 
 // Product/Listing condition enum
@@ -54,15 +55,26 @@ enum VerificationStatus {
   REJECTED
 }
 
+// Status of orders
+enum OrderStatus {
+  PENDING
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+  REFUNDED
+}
+
 model User {
-  id        String   @id @default(uuid())
-  name      String
-  email     String   @unique
-  password  String
-  college   String
-  role      UserRole @default(STUDENT)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          String   @id @default(uuid())
+  name        String
+  email       String   @unique
+  password    String
+  college     String
+  role        UserRole @default(STUDENT)
+  isSuspended Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   // Relations
   listings                 Listing[]          @relation("UserListings")
@@ -71,6 +83,9 @@ model User {
   sentExchangeRequests     ExchangeRequest[]  @relation("SentExchanges")
   receivedExchangeRequests ExchangeRequest[]  @relation("ReceivedExchanges")
   verifications            Verification[]     @relation("UserVerifications")
+  orders                   Order[]            @relation("UserOrders")
+  inventoryLogs            InventoryLog[]     @relation("UserInventoryLogs")
+  auditLogs                AuditLog[]         @relation("AdminAuditLogs")
 }
 
 model Listing {
@@ -81,6 +96,8 @@ model Listing {
   condition         Condition
   durationUsed      String?       // E.g., "3 months", "1 year"
   category          String
+  brand             String?
+  images            String[]      @default([])
   stock             Int           @default(1)
   sellerId          String
   seller            User          @relation("UserListings", fields: [sellerId], references: [id], onDelete: Cascade)
@@ -92,11 +109,13 @@ model Listing {
   updatedAt         DateTime      @updatedAt
 
   // Relations
-  wishlistItems       WishlistItem[]
-  cartItems           CartItem[]
-  offeredInExchanges  ExchangeRequest[] @relation("OfferedListing")
+  wishlistItems        WishlistItem[]
+  cartItems            CartItem[]
+  offeredInExchanges   ExchangeRequest[] @relation("OfferedListing")
   requestedInExchanges ExchangeRequest[] @relation("RequestedListing")
-  verifications       Verification[]
+  verifications        Verification[]
+  orderItems           OrderItem[]
+  inventoryLogs        InventoryLog[]
 
   // Indexes for query optimization
   @@index([sellerId])
@@ -169,4 +188,59 @@ model Verification {
   // Indexes for query optimization
   @@index([productId])
   @@index([verifierId])
+}
+
+model Order {
+  id          String      @id @default(uuid())
+  userId      String
+  user        User        @relation("UserOrders", fields: [userId], references: [id], onDelete: Cascade)
+  totalAmount Decimal     @db.Decimal(10, 2)
+  status      OrderStatus @default(PENDING)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  items OrderItem[]
+
+  @@index([userId])
+}
+
+model OrderItem {
+  id        String   @id @default(uuid())
+  orderId   String
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  listingId String
+  listing   Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  quantity  Int      @default(1)
+  price     Decimal  @db.Decimal(10, 2)
+  createdAt DateTime @default(now())
+
+  @@index([orderId])
+  @@index([listingId])
+}
+
+model InventoryLog {
+  id            String   @id @default(uuid())
+  listingId     String
+  listing       Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  previousStock Int
+  newStock      Int
+  updatedById   String
+  updatedBy     User     @relation("UserInventoryLogs", fields: [updatedById], references: [id], onDelete: Cascade)
+  timestamp     DateTime @default(now())
+
+  @@index([listingId])
+  @@index([updatedById])
+}
+
+model AuditLog {
+  id         String   @id @default(uuid())
+  adminId    String
+  admin      User     @relation("AdminAuditLogs", fields: [adminId], references: [id], onDelete: Cascade)
+  action     String
+  targetType String
+  targetId   String?
+  details    String?
+  timestamp  DateTime @default(now())
+
+  @@index([adminId])
 }
