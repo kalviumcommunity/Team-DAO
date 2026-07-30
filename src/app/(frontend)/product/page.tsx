@@ -206,15 +206,27 @@ function ProductDetailContent() {
               >
                 Add to Wishlist
               </Button>
-              <Button
-                variant="primary"
-                fullWidth
-                className="flex-1 py-4 text-[16px]"
-                type="button"
-                onClick={handleAddToCart}
-              >
-                Add to Cart
-              </Button>
+              {product.availableStock !== undefined && (product.availableStock <= 0 || product.status === "SOLD" || product.status === "DEACTIVATED") ? (
+                <Button
+                  variant="outline"
+                  fullWidth
+                  disabled
+                  className="flex-1 py-4 text-[16px] cursor-not-allowed bg-warm-mist text-sage-gray"
+                  type="button"
+                >
+                  Sold Out
+                </Button>
+              ) : (
+                <Button
+                  variant="primary"
+                  fullWidth
+                  className="flex-1 py-4 text-[16px]"
+                  type="button"
+                  onClick={handleAddToCart}
+                >
+                  Add to Cart
+                </Button>
+              )}
             </StaggerItem>
 
             {/* Wishlist & Cart Status Capsule */}

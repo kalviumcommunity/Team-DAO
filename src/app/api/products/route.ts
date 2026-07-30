@@ -8,7 +8,7 @@ export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
     const category = searchParams.get("category") || undefined;
     const condition = (searchParams.get("condition") as Condition) || undefined;
-    const status = (searchParams.get("status") as ListingStatus) || ListingStatus.ACTIVE; // default to ACTIVE listings
+    const status = (searchParams.get("status") as ListingStatus) || undefined;
     const search = searchParams.get("search") || undefined;
     const minPriceStr = searchParams.get("minPrice");
     const maxPriceStr = searchParams.get("maxPrice");

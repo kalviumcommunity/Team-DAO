@@ -105,7 +105,7 @@ export async function getCurrentUser() {
 }
 
 // Mapping Helpers to bridge DB schema to frontend types
-function mapDbListingToProduct(listing: any): Product {
+export function mapDbListingToProduct(listing: any): Product {
   if (!listing) return listing;
   
   // Format price
@@ -183,7 +183,11 @@ function mapDbListingToProduct(listing: any): Product {
     imageAlt,
     description: listing.description || "",
     condition,
-    trending: listing.verified || false
+    category: listing.category || "",
+    durationUsed: listing.durationUsed || "",
+    trending: listing.verified || false,
+    availableStock: typeof listing.stock === "number" ? listing.stock : 1,
+    status: listing.status || "ACTIVE",
   };
 }
 

@@ -11,6 +11,7 @@ export interface Product {
   durationUsed?: string;
   trending?: boolean;
   availableStock?: number;
+  status?: string;
 }
 
 export type StockStatus = "in-stock" | "low-stock" | "out-of-stock";
