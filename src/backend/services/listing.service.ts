@@ -92,8 +92,15 @@ export class ListingService {
     if (data.price !== undefined && data.price < 0) {
       throw new Error("Price cannot be negative");
     }
-    if (data.stock !== undefined && data.stock < 0) {
-      throw new Error("Stock cannot be negative");
+    if (data.stock !== undefined) {
+      if (data.stock < 0) {
+        throw new Error("Stock cannot be negative");
+      }
+      if (data.stock === 0) {
+        data.status = ListingStatus.SOLD;
+      } else if (data.stock > 0 && data.status !== ListingStatus.DEACTIVATED) {
+        data.status = ListingStatus.ACTIVE;
+      }
     }
 
     return ListingRepository.update(id, data);

@@ -66,6 +66,7 @@ export class AdminService {
     brand?: string;
     images?: string[];
   }) {
+    const computedStatus = data.stock <= 0 ? ListingStatus.SOLD : ListingStatus.ACTIVE;
     const product = await AdminRepository.createProduct({
       title: data.title,
       description: data.description,
@@ -74,7 +75,7 @@ export class AdminService {
       condition: data.condition || Condition.GOOD,
       stock: data.stock,
       seller: { connect: { id: data.sellerId || adminId } },
-      status: ListingStatus.ACTIVE,
+      status: computedStatus,
       listingType: data.listingType || ListingType.SALE,
       brand: data.brand || null,
       images: data.images || [],
@@ -109,8 +110,14 @@ export class AdminService {
     brand?: string;
     images?: string[];
   }) {
-    // If stock is changing, create inventory log
+    // If stock is changing, handle automatic status transition and inventory log
     if (typeof data.stock === "number") {
+      if (data.stock <= 0) {
+        data.status = ListingStatus.SOLD;
+      } else if (data.stock > 0 && data.status !== ListingStatus.DEACTIVATED) {
+        data.status = ListingStatus.ACTIVE;
+      }
+
       const existing = await AdminRepository.findAllProducts({ search: productId, limit: 1 });
       const currentProduct = existing.products.find((p) => p.id === productId);
       if (currentProduct && currentProduct.stock !== data.stock) {

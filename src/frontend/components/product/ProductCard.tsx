@@ -31,7 +31,9 @@ export function ProductCard({ product, layout = "hero" }: ProductCardProps) {
   const isOutOfStock =
     product.availableStock === 0 ||
     (product as any).stock === "out-of-stock" ||
-    (product as any).stock === 0;
+    (product as any).stock === 0 ||
+    product.status === "SOLD" ||
+    product.status === "DEACTIVATED";
 
   useEffect(() => {
     const cart = getLocalCart();

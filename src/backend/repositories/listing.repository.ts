@@ -32,6 +32,8 @@ export class ListingRepository {
 
     if (filters.status) {
       where.status = filters.status;
+    } else {
+      where.status = { in: [ListingStatus.ACTIVE, ListingStatus.SOLD] };
     }
     if (filters.category) {
       where.category = {
