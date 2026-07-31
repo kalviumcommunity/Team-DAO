@@ -19,6 +19,7 @@ const DEFAULT_LINKS: NavLink[] = [
   { label: "Electronics", href: "/electronics" },
   { label: "Stationery", href: "/stationery" },
   { label: "Sell", href: "/sell" },
+  { label: "My Listings", href: "/sell/manage" },
 ];
 
 interface NavbarProps {
@@ -167,6 +168,14 @@ export function Navbar({ links = DEFAULT_LINKS, activeHref, minimal = false }: N
                           )}
                         </div>
                       )}
+                      <Link
+                        href="/sell/manage"
+                        onClick={() => setMenuOpen(false)}
+                        className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-sm text-on-surface hover:bg-black/5 transition-colors mb-1 cursor-pointer"
+                      >
+                        <ShoppingBag className="h-4 w-4 text-primary" />
+                        Seller Dashboard
+                      </Link>
                       <button
                         type="button"
                         onClick={() => {

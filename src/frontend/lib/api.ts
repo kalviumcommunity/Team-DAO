@@ -374,6 +374,135 @@ export async function getProductById(id: string) {
   return mapDbListingToProduct(data.listing);
 }
 
+// Seller Dashboard APIs
+export interface SellerListingBuyer {
+  id: string;
+  name: string;
+  email: string;
+  college: string;
+  quantity: number;
+  pricePaid: number;
+  orderDate: string;
+  orderStatus: string;
+}
+
+export interface SellerListingItem {
+  id: string;
+  title: string;
+  description: string;
+  price: number;
+  condition: string;
+  category: string;
+  stock: number;
+  status: string;
+  listingType?: string;
+  verified?: boolean;
+  createdAt: string;
+  buyers: SellerListingBuyer[];
+}
+
+export function getLocalSellerListings(): SellerListingItem[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = localStorage.getItem("stucart_seller_listings");
+    if (raw) return JSON.parse(raw);
+    const initial: SellerListingItem[] = [
+      {
+        id: "local-seller-book-1",
+        title: "Introduction to Computer Science (2nd Ed.)",
+        description: "Standard CS intro textbook in excellent condition.",
+        price: 45.0,
+        condition: "GOOD",
+        category: "Books",
+        stock: 3,
+        status: "ACTIVE",
+        createdAt: new Date().toISOString(),
+        buyers: [
+          {
+            id: "buyer-alex-1",
+            name: "Alex Johnson",
+            email: "alex.j@university.edu",
+            college: "Engineering College",
+            quantity: 1,
+            pricePaid: 45.0,
+            orderDate: new Date().toISOString(),
+            orderStatus: "DELIVERED",
+          },
+        ],
+      },
+    ];
+    localStorage.setItem("stucart_seller_listings", JSON.stringify(initial));
+    return initial;
+  } catch {
+    return [];
+  }
+}
+
+export function saveLocalSellerListings(items: SellerListingItem[]) {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.setItem("stucart_seller_listings", JSON.stringify(items));
+  } catch {
+    // ignore
+  }
+}
+
+export async function getSellerListings(): Promise<SellerListingItem[]> {
+  try {
+    const data = await apiRequest<{ listings: SellerListingItem[] }>("/api/seller/listings");
+    if (data.listings && Array.isArray(data.listings)) {
+      saveLocalSellerListings(data.listings);
+      return data.listings;
+    }
+    return getLocalSellerListings();
+  } catch {
+    return getLocalSellerListings();
+  }
+}
+
+export async function updateSellerListing(
+  id: string,
+  payload: { price?: number; stock?: number; status?: string; title?: string; description?: string }
+) {
+  // Update local storage fallback first
+  const current = getLocalSellerListings();
+  const idx = current.findIndex((item) => item.id === id);
+  if (idx >= 0) {
+    if (payload.price !== undefined) current[idx].price = payload.price;
+    if (payload.stock !== undefined) {
+      current[idx].stock = payload.stock;
+      if (payload.stock === 0) current[idx].status = "SOLD";
+      else if (payload.stock > 0 && current[idx].status === "SOLD") current[idx].status = "ACTIVE";
+    }
+    if (payload.status !== undefined) current[idx].status = payload.status;
+    if (payload.title !== undefined) current[idx].title = payload.title;
+    if (payload.description !== undefined) current[idx].description = payload.description;
+    saveLocalSellerListings(current);
+  }
+
+  try {
+    return await apiRequest<{ listing: any }>(`/api/products/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(payload),
+    });
+  } catch {
+    return { success: true, local: true };
+  }
+}
+
+export async function deleteSellerListing(id: string) {
+  const current = getLocalSellerListings();
+  saveLocalSellerListings(current.filter((item) => item.id !== id));
+
+  try {
+    return await apiRequest<{ message: string }>(`/api/products/${id}`, {
+      method: "DELETE",
+    });
+  } catch {
+    return { success: true, local: true };
+  }
+}
+
 // Cart
 export async function getCartItems() {
   const localItems = getLocalCart();

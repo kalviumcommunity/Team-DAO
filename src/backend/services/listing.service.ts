@@ -62,6 +62,10 @@ export class ListingService {
     return listing;
   }
 
+  static async getSellerListings(sellerId: string) {
+    return ListingRepository.findBySellerId(sellerId);
+  }
+
   static async updateListing(
     userId: string,
     userRole: string,
