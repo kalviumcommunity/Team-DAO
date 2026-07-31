@@ -347,11 +347,24 @@ export async function pollWishlistStockStatus(items: WishlistItem[]): Promise<Wi
 }
 
 // Products
-export async function getProducts(params?: { category?: string }) {
-  let url = '/api/products';
-  if (params?.category) {
-    url += `?category=${encodeURIComponent(params.category)}`;
-  }
+export async function getProducts(params?: {
+  category?: string;
+  condition?: string;
+  minPrice?: number;
+  maxPrice?: number;
+  search?: string;
+  trendingOnly?: boolean;
+}) {
+  const query = new URLSearchParams();
+  if (params?.category) query.set("category", params.category);
+  if (params?.condition) query.set("condition", params.condition);
+  if (params?.minPrice !== undefined) query.set("minPrice", params.minPrice.toString());
+  if (params?.maxPrice !== undefined) query.set("maxPrice", params.maxPrice.toString());
+  if (params?.search) query.set("search", params.search);
+  if (params?.trendingOnly) query.set("trending", "true");
+
+  const queryString = query.toString();
+  const url = `/api/products${queryString ? `?${queryString}` : ""}`;
   const data = await apiRequest<{ listings: any[] }>(url);
   return data.listings.map(mapDbListingToProduct);
 }
