@@ -33,7 +33,8 @@ export class ListingRepository {
     if (filters.status) {
       where.status = filters.status;
     } else {
-      where.status = { in: [ListingStatus.ACTIVE, ListingStatus.SOLD] };
+      where.status = ListingStatus.ACTIVE;
+      where.stock = { gt: 0 };
     }
     if (filters.category) {
       where.category = {
@@ -72,6 +73,33 @@ export class ListingRepository {
             name: true,
             email: true,
             college: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+  }
+
+  static async findBySellerId(sellerId: string) {
+    return db.listing.findMany({
+      where: { sellerId },
+      include: {
+        orderItems: {
+          include: {
+            order: {
+              include: {
+                user: {
+                  select: {
+                    id: true,
+                    name: true,
+                    email: true,
+                    college: true,
+                  },
+                },
+              },
+            },
           },
         },
       },
