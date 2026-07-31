@@ -1,24 +1,52 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Navbar } from "@/frontend/components/layout/Navbar";
 import { Footer } from "@/frontend/components/layout/Footer";
 import { ListingForm } from "@/frontend/components/common/ListingForm";
 import { FadeInSection } from "@/frontend/components/motion/FadeInSection";
-import { apiRequest, getLocalSellerListings, saveLocalSellerListings } from "@/frontend/lib/api";
-import { Sparkles, ArrowRight, CheckCircle2 } from "lucide-react";
+import { apiRequest, getAuthToken, getCurrentUser, getLocalSellerListings, saveLocalSellerListings } from "@/frontend/lib/api";
+import { Sparkles, ArrowRight, CheckCircle2, Lock, LogIn, UserPlus } from "lucide-react";
 import { Button } from "@/frontend/components/common/Button";
 
 export default function SellPage() {
   const [createdListing, setCreatedListing] = useState<any | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    const token = getAuthToken();
+    if (!token) {
+      setIsAuthenticated(false);
+      return;
+    }
+
+    getCurrentUser()
+      .then((res) => {
+        if (res?.user) {
+          setIsAuthenticated(true);
+        } else {
+          setIsAuthenticated(false);
+        }
+      })
+      .catch(() => {
+        setIsAuthenticated(false);
+      });
+  }, []);
 
   const handleSubmit = async (payload: Record<string, unknown>) => {
     try {
       setSubmitting(true);
       setError(null);
+
+      // Validate price > 0
+      const numPrice = Number(payload.price);
+      if (isNaN(numPrice) || numPrice <= 0) {
+        setError("Price must be greater than 0");
+        return;
+      }
 
       let createdItem: any = null;
       try {
@@ -33,7 +61,7 @@ export default function SellPage() {
           id: `seller-item-${Date.now()}`,
           title: payload.title || "Listed Item",
           description: payload.description || "",
-          price: Number(payload.price) || 0,
+          price: numPrice,
           condition: payload.condition || "GOOD",
           category: payload.category || "Books",
           stock: Number(payload.stock) || 1,
@@ -92,7 +120,43 @@ export default function SellPage() {
           </p>
         ) : null}
 
-        {createdListing ? (
+        {isAuthenticated === false ? (
+          <FadeInSection className="flex flex-col items-center rounded-3xl border border-amber-300 bg-surface p-8 text-center shadow-xl dark:border-amber-700">
+            <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-amber-100 text-amber-900 shadow-md">
+              <Lock className="h-8 w-8" />
+            </div>
+
+            <h2 className="font-display text-2xl font-normal text-stone-charcoal mb-2">
+              Sign In Required to Sell Items
+            </h2>
+
+            <p className="mb-8 max-w-md font-body-sm text-sm text-sage-gray leading-relaxed">
+              You must be logged in as an authenticated student to list products, manage inventory prices, and connect with buyers on campus.
+            </p>
+
+            <div className="flex flex-col sm:flex-row items-center gap-4 w-full justify-center">
+              <Link href="/login?redirect=/sell" className="w-full sm:w-auto">
+                <Button
+                  variant="primary"
+                  className="w-full flex items-center justify-center gap-2 bg-primary-container text-on-background py-3.5 px-6 rounded-full font-medium"
+                >
+                  <LogIn className="h-4 w-4" />
+                  Sign In to Sell
+                </Button>
+              </Link>
+
+              <Link href="/signup" className="w-full sm:w-auto">
+                <Button
+                  variant="outline"
+                  className="w-full flex items-center justify-center gap-2 border-stone-charcoal text-stone-charcoal hover:bg-stone-charcoal hover:text-surface py-3.5 px-6 rounded-full font-medium"
+                >
+                  <UserPlus className="h-4 w-4" />
+                  Create Account
+                </Button>
+              </Link>
+            </div>
+          </FadeInSection>
+        ) : createdListing ? (
           <FadeInSection className="flex flex-col items-center rounded-3xl border border-primary/20 bg-primary-container/30 p-8 text-center shadow-lg">
             <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary-container text-on-background shadow-md">
               <CheckCircle2 className="h-8 w-8" />
