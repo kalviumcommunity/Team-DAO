@@ -19,8 +19,8 @@ export class ListingService {
     if (!data.title || data.title.trim().length === 0) {
       throw new Error("Title is required");
     }
-    if (data.price < 0) {
-      throw new Error("Price cannot be negative");
+    if (data.price <= 0) {
+      throw new Error("Price must be greater than 0");
     }
     if (data.stock !== undefined && data.stock < 0) {
       throw new Error("Stock cannot be negative");
@@ -93,8 +93,8 @@ export class ListingService {
       throw new Error("Not authorized to update this listing");
     }
 
-    if (data.price !== undefined && data.price < 0) {
-      throw new Error("Price cannot be negative");
+    if (data.price !== undefined && data.price <= 0) {
+      throw new Error("Price must be greater than 0");
     }
     if (data.stock !== undefined) {
       if (data.stock < 0) {

@@ -120,6 +120,8 @@ export function ListingForm({ onSubmit, submitting = false }: ListingFormProps) 
             <TextInput
               id="price"
               type="number"
+              min="1"
+              step="1"
               placeholder="0.00"
               required
               name="price"

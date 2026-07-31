@@ -8,6 +8,7 @@ import { Heart, UserCircle2, LogOut, ShoppingBag } from "lucide-react";
 import { Button } from "@/frontend/components/common/Button";
 import { cn } from "@/frontend/lib/cn";
 import { clearAuthToken, getAuthToken, getCurrentUser } from "@/frontend/lib/api";
+import { StockAlertToast } from "@/frontend/components/common/StockAlertToast";
 
 export interface NavLink {
   label: string;
@@ -216,6 +217,7 @@ export function Navbar({ links = DEFAULT_LINKS, activeHref, minimal = false }: N
           {minimal && <UserCircle2 className="h-7 w-7 text-on-surface" />}
         </div>
       </div>
+      <StockAlertToast />
     </motion.header>
   );
 }

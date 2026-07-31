@@ -10,6 +10,8 @@ import {
   getSellerListings,
   updateSellerListing,
   deleteSellerListing,
+  getAuthToken,
+  getCurrentUser,
   type SellerListingItem,
 } from "@/frontend/lib/api";
 import {
@@ -27,19 +29,48 @@ import {
   EyeOff,
   RefreshCw,
   Tag,
+  Lock,
+  LogIn,
+  UserPlus,
 } from "lucide-react";
 
 export default function SellerManagePage() {
   const [listings, setListings] = useState<SellerListingItem[]>([]);
+  const [draftPrices, setDraftPrices] = useState<Record<string, number>>({});
+  const [priceErrors, setPriceErrors] = useState<Record<string, string | null>>({});
   const [isLoading, setIsLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [saveSuccessId, setSaveSuccessId] = useState<string | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
 
   const loadListings = async () => {
+    const token = getAuthToken();
+    if (!token) {
+      setIsAuthenticated(false);
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      const uRes = await getCurrentUser();
+      if (uRes?.user) {
+        setIsAuthenticated(true);
+      } else {
+        setIsAuthenticated(false);
+      }
+    } catch {
+      setIsAuthenticated(false);
+    }
+
     setIsLoading(true);
     try {
       const items = await getSellerListings();
       setListings(items);
+      const initialDrafts: Record<string, number> = {};
+      items.forEach((item) => {
+        initialDrafts[item.id] = item.price;
+      });
+      setDraftPrices(initialDrafts);
     } catch {
       // Handled in API fallback
     } finally {
@@ -51,17 +82,23 @@ export default function SellerManagePage() {
     void loadListings();
   }, []);
 
-  // Update Price Handler
-  const handlePriceChange = async (id: string, newPrice: number) => {
-    if (isNaN(newPrice) || newPrice < 0) return;
+  // Explicit Update Price Handler
+  const handlePriceSave = async (id: string) => {
+    const targetPrice = draftPrices[id];
+    if (targetPrice === undefined || targetPrice <= 0) {
+      setPriceErrors((prev) => ({ ...prev, [id]: "Price must be greater than 0" }));
+      return;
+    }
+
+    setPriceErrors((prev) => ({ ...prev, [id]: null }));
     setUpdatingId(id);
     try {
-      await updateSellerListing(id, { price: newPrice });
+      await updateSellerListing(id, { price: targetPrice });
       setListings((prev) =>
-        prev.map((item) => (item.id === id ? { ...item, price: newPrice } : item))
+        prev.map((item) => (item.id === id ? { ...item, price: targetPrice } : item))
       );
       setSaveSuccessId(id);
-      setTimeout(() => setSaveSuccessId(null), 2000);
+      setTimeout(() => setSaveSuccessId(null), 2500);
     } catch {
       // Fallback updated locally
     } finally {
@@ -194,7 +231,43 @@ export default function SellerManagePage() {
         </FadeInSection>
 
         {/* Listings List & Controls */}
-        {isLoading ? (
+        {isAuthenticated === false ? (
+          <FadeInSection className="mb-16 flex flex-col items-center justify-center rounded-3xl border border-amber-300 bg-surface p-10 text-center shadow-xl dark:border-amber-700">
+            <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-amber-100 text-amber-900 shadow-md">
+              <Lock className="h-8 w-8" />
+            </div>
+
+            <h2 className="font-display text-2xl font-normal text-stone-charcoal mb-2">
+              Sign In Required to Manage Seller Inventory
+            </h2>
+
+            <p className="mb-8 max-w-md font-body-sm text-sm text-sage-gray leading-relaxed">
+              You must be logged in as an authenticated seller to access the inventory dashboard, control prices, and track student orders.
+            </p>
+
+            <div className="flex flex-col sm:flex-row items-center gap-4 w-full justify-center">
+              <Link href="/login?redirect=/sell/manage" className="w-full sm:w-auto">
+                <Button
+                  variant="primary"
+                  className="w-full flex items-center justify-center gap-2 bg-primary-container text-on-background py-3.5 px-6 rounded-full font-medium"
+                >
+                  <LogIn className="h-4 w-4" />
+                  Sign In
+                </Button>
+              </Link>
+
+              <Link href="/signup" className="w-full sm:w-auto">
+                <Button
+                  variant="outline"
+                  className="w-full flex items-center justify-center gap-2 border-stone-charcoal text-stone-charcoal hover:bg-stone-charcoal hover:text-surface py-3.5 px-6 rounded-full font-medium"
+                >
+                  <UserPlus className="h-4 w-4" />
+                  Create Account
+                </Button>
+              </Link>
+            </div>
+          </FadeInSection>
+        ) : isLoading ? (
           <p className="mb-16 text-center text-sage-gray py-12">Loading seller dashboard...</p>
         ) : listings.length === 0 ? (
           <FadeInSection className="mb-16 flex flex-col items-center justify-center rounded-3xl border border-surface-container-high bg-surface-container-low px-6 py-16 text-center">
@@ -279,44 +352,47 @@ export default function SellerManagePage() {
 
                     {/* Middle Section: Controllers (Price & Quantity) */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-surface-container-low/60 rounded-2xl p-5 border border-surface-container-high">
-                      {/* Price Controller */}
+                      {/* Price Controller with Explicit Update Button */}
                       <div>
-                        <label className="block font-body-sm text-xs font-semibold uppercase tracking-wider text-sage-gray mb-2">
-                          Asking Price (₹)
-                        </label>
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center justify-between mb-2">
+                          <label className="block font-body-sm text-xs font-semibold uppercase tracking-wider text-sage-gray">
+                            Asking Price (₹)
+                          </label>
+                          {priceErrors[item.id] && (
+                            <span className="font-body-sm text-xs font-medium text-red-600">
+                              {priceErrors[item.id]}
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2">
                           <div className="relative flex-1">
                             <span className="absolute left-3.5 top-1/2 -translate-y-1/2 font-body-sm text-sm font-semibold text-stone-charcoal">
                               ₹
                             </span>
                             <input
                               type="number"
-                              min="0"
+                              min="1"
                               step="1"
-                              value={item.price}
-                              onChange={(e) =>
-                                handlePriceChange(item.id, parseFloat(e.target.value) || 0)
-                              }
-                              className="w-full rounded-xl border border-stone-charcoal/20 bg-surface pl-8 pr-4 py-2.5 font-body-sm text-base font-semibold text-stone-charcoal focus:border-stone-charcoal focus:outline-hidden"
+                              value={draftPrices[item.id] !== undefined ? draftPrices[item.id] : item.price}
+                              onChange={(e) => {
+                                const val = parseFloat(e.target.value);
+                                setDraftPrices((prev) => ({ ...prev, [item.id]: isNaN(val) ? 0 : val }));
+                                if (val > 0) {
+                                  setPriceErrors((prev) => ({ ...prev, [item.id]: null }));
+                                }
+                              }}
+                              className="w-full rounded-xl border border-stone-charcoal/20 bg-surface pl-8 pr-3 py-2.5 font-body-sm text-base font-semibold text-stone-charcoal focus:border-stone-charcoal focus:outline-hidden"
                             />
                           </div>
 
-                          <div className="flex items-center gap-1">
-                            <button
-                              type="button"
-                              onClick={() => handlePriceChange(item.id, Math.max(0, item.price - 5))}
-                              className="flex h-10 w-10 items-center justify-center rounded-xl border border-stone-charcoal/20 bg-surface text-stone-charcoal hover:bg-surface-container-high cursor-pointer transition-colors"
-                            >
-                              <Minus className="h-4 w-4" />
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => handlePriceChange(item.id, item.price + 5)}
-                              className="flex h-10 w-10 items-center justify-center rounded-xl border border-stone-charcoal/20 bg-surface text-stone-charcoal hover:bg-surface-container-high cursor-pointer transition-colors"
-                            >
-                              <Plus className="h-4 w-4" />
-                            </button>
-                          </div>
+                          <button
+                            type="button"
+                            onClick={() => handlePriceSave(item.id)}
+                            disabled={updatingId === item.id}
+                            className="flex items-center gap-1 rounded-xl bg-primary-container px-4 py-2.5 font-body-sm text-xs font-semibold text-on-background hover:brightness-95 transition-all cursor-pointer disabled:opacity-50"
+                          >
+                            Update Price
+                          </button>
                         </div>
                       </div>
 

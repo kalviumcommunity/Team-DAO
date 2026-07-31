@@ -39,7 +39,7 @@ export async function POST(req: Request) {
   try {
     const user = await getCurrentUser(req);
     if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized. Please sign in to list items." }, { status: 401 });
     }
 
     const body = await req.json();
@@ -58,6 +58,14 @@ export async function POST(req: Request) {
     if (!title || price === undefined || !condition || !category) {
       return NextResponse.json(
         { error: "Missing required fields: title, price, condition, category" },
+        { status: 400 }
+      );
+    }
+
+    const parsedPrice = parseFloat(price);
+    if (isNaN(parsedPrice) || parsedPrice <= 0) {
+      return NextResponse.json(
+        { error: "Price must be greater than 0" },
         { status: 400 }
       );
     }
