@@ -43,3 +43,13 @@ export interface VerificationListing extends Product {
   status: VerificationStatus;
   seller: { name: string; avatar: string; avatarAlt: string };
 }
+
+export interface ProductFilterState {
+  condition?: string;
+  minPrice?: number;
+  maxPrice?: number;
+  durationUsed?: string;
+  trendingOnly?: boolean;
+  search?: string;
+}
+
