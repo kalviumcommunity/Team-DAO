@@ -457,6 +457,100 @@ The app will be available at `http://localhost:3000`, and the WebSocket server a
 
 ---
 
+## 🐳 Docker & Production Deployment
+
+Stucart is fully containerized using Docker and Docker Compose for seamless development, testing, and production cloud deployment.
+
+### Docker Prerequisites
+- Docker Engine ≥ 24.0 / Docker Desktop
+- Docker Compose v2+
+
+### 1. Local Development via Docker Compose
+
+```bash
+# 1. Clone repository & configure environment variables
+cp .env.example .env
+
+# 2. Build and start all services (PostgreSQL, Next.js Web App, WebSocket Server)
+docker compose up -d --build
+
+# 3. View live container logs
+docker compose logs -f
+
+# 4. Stop all running containers
+docker compose down
+```
+
+Once started, services will be accessible at:
+- **Next.js Web Application:** `http://localhost:3000`
+- **Real-Time WebSocket Server:** `ws://localhost:3001`
+- **WebSocket Health Endpoint:** `http://localhost:3001/health`
+- **PostgreSQL Database:** `localhost:5432`
+
+### 2. Production Deployment Workflow
+
+For production environments, use the production-hardened `docker-compose.prod.yml` configuration:
+
+```bash
+# 1. Set environment variables (ensure strong JWT_SECRET and POSTGRES_PASSWORD)
+cp .env.example .env.production
+
+# 2. Launch production stack in detached mode
+docker compose -f docker-compose.prod.yml up -d --build
+
+# 3. Monitor container health & logs
+docker compose -f docker-compose.prod.yml ps
+docker compose -f docker-compose.prod.yml logs -f --tail=100
+```
+
+### 3. Environment Variable Configuration Reference
+
+| Environment Variable | Default Value | Description |
+|---|---|---|
+| `POSTGRES_USER` | `postgres` | Database superuser username |
+| `POSTGRES_PASSWORD` | `postgres_password_change_me` | Database superuser password |
+| `POSTGRES_DB` | `stucart_db` | Main relational database name |
+| `DATABASE_URL` | `postgresql://...` | Full PostgreSQL connection string |
+| `JWT_SECRET` | `super-secret-jwt...` | Secret key for JWT signing & verification |
+| `PORT` | `3000` | HTTP port for Next.js web application |
+| `WS_PORT` | `3001` | TCP port for standalone WebSocket server |
+| `NEXT_PUBLIC_WS_URL` | `ws://localhost:3001` | Browser client WebSocket URL |
+| `SEED_DATABASE` | `"true"` (dev) / `"false"` (prod) | Triggers `npx prisma db seed` on entrypoint startup |
+
+### 4. Docker Troubleshooting & Common FAQs
+
+<details>
+<summary><b>Database migration failed during container startup?</b></summary>
+
+The entrypoint script automatically executes `npx prisma migrate deploy`. If the PostgreSQL container is starting for the first time, ensure the health check completes:
+```bash
+docker compose ps
+docker compose logs postgres
+```
+</details>
+
+<details>
+<summary><b>Port 3001 or 3000 already in use?</b></summary>
+
+Change the host port mapping in `.env` or `docker-compose.yml`:
+```yaml
+ports:
+  - "3002:3001"
+```
+And update `NEXT_PUBLIC_WS_URL="ws://localhost:3002"`.
+</details>
+
+<details>
+<summary><b>How to manually run migrations or seeds inside running container?</b></summary>
+
+```bash
+docker compose exec web npx prisma migrate deploy
+docker compose exec web npx prisma db seed
+```
+</details>
+
+---
+
 ## 🧪 Testing
 
 ```bash
