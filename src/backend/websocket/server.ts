@@ -1,5 +1,7 @@
 import { WebSocketServer, WebSocket } from 'ws';
 import http from 'http';
+import { db } from '../lib/db';
+import { startStockCheckJob } from '../services/stock-check.job';
 
 const PORT = Number(process.env.WS_PORT) || 3001;
 
@@ -174,6 +176,7 @@ if (!(globalThis as any).__ws_server_listening__) {
   try {
     server.listen(PORT, () => {
       console.log(`🚀 [WS Server] Active user WebSocket server listening on ws://localhost:${PORT}`);
+      startStockCheckJob(db);
     });
   } catch (err: any) {
     if (err?.code !== 'EADDRINUSE') {

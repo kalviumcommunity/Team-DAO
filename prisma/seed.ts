@@ -14,7 +14,7 @@ const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
 
 async function main() {
-  if (process.env.NODE_ENV === "production") {
+  if (process.env.NODE_ENV === "production" && process.env.SEED_DATABASE !== "true") {
     console.log("Seeding skipped: Safety guard prevents seeding in production environment.");
     return;
   }
