@@ -23,12 +23,17 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
+# Provide build-time fallback environment variables required by Next.js build & Prisma 7
+ENV DATABASE_URL="postgresql://postgres:postgres@localhost:5432/stucart_db?schema=public"
+ENV JWT_SECRET="build-time-secret-key-for-nextjs-build"
+ENV NEXT_PHASE="phase-production-build"
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV NODE_ENV=production
+
 # Generate Prisma client artifacts
 RUN npx prisma generate
 
 # Build Next.js standalone application
-ENV NEXT_TELEMETRY_DISABLED=1
-ENV NODE_ENV=production
 RUN npm run build
 
 # ------------------------------------------------------------------------------
